@@ -45,7 +45,7 @@ setup(
     include_package_data=True,
     python_requires=">=3.8",
     install_requires=["tutor>=16.0.0,<17.0.0"],
-    entry_points={"tutor.plugin.v1": ["indigo = tutorindigo.plugin"]},
+    entry_points={"tutor.plugin.v1": ["indigo_OST2_palm = tutorindigo.plugin"]},
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",

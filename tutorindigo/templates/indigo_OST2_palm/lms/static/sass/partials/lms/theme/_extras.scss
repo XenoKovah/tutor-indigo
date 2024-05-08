@@ -212,3 +212,27 @@ nav.wrapper-preview-menu {
       }
   }
 }
+
+.courses .courses-listing {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+iframe { max-width: 100%; }
+
+.markdown_xblock {
+  code {
+    padding: 0 4px;
+    border-radius: 3px;
+    background: #eee;
+    font-family: Monaco, monospace;
+  }
+  pre {
+    padding: 0 4px;
+    overflow: auto;
+    background: #eee;
+    border-radius: 3px;
+    font-family: Monaco, monospace;
+  }
+}
