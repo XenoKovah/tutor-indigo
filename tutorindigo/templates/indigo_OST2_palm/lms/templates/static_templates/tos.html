@@ -1,0 +1,53 @@
+<%page expression_filter="h"/>
+<%! from django.utils.translation import ugettext as _ %>
+<%inherit file="../main.html" />
+
+<%block name="pagetitle">${_("Terms of Service")}</%block>
+
+<main id="main" aria-label="Content" tabindex="-1">
+    <section class="container about">
+        <h1>
+            <%block name="pageheader">${page_header or _("Terms of Service")}</%block>
+        </h1>
+        <h2>
+            <%block name="code_of_conduct">${_("Code of Conduct")}</%block>
+        </h2>
+        <p>
+            <%block name="pagecontent">OpenSecurityTraining2 (OST2) provides free high quality training material for students' <i>professional development</i>, and we therefore expect students to behave with <i>professional decorum.</i></%block>
+        </p>
+        <p>
+            <%block name="pagecontent2">Inappropriate behavior:</%block>
+            <ul>
+                <li>Attempting to disrupt classes in any way.</li>
+                <li>Utilizing OST2 infrastructure for purposes other than completing classes.</li>
+                <li>Posting any information, non-public, or technically-public, about a person which is perceived by that person as threatening. (I.e. "doxing")</li>
+                <li>Posting sexual or other unprofessional images.</li>
+                <li>Unwelcome sexual attention.</li>
+                <li>Comments that reinforce social structures of discrimination, such as comments related to gender, gender identity and expression, sexual orientation, disability, physical appearance, body size, race, age, geographic background, or religion.</li>
+                <li>Any other forms of threats or harassment.</li>
+                <li>Advocating for, or encouraging, any of the above behavior </li>
+            </ul>
+        </p>
+        <p>
+            <%block name="pagecontent3">Consequences for violations:</%block>
+            <p>
+            <%block name="pagecontent4">Participants involved in activities that violate this anti-harassment policy will be given a warning on the first offense, and banned from the site on a second offense, with all course-completion certificates revoked.</%block>
+            </p>
+        </p>
+        <p>
+            <%block name="pagecontent5"></%block>
+        </p>
+        <h2>
+            <%block name="privacy_policy">${_("Privacy Policy")}</%block>
+        </h2>
+        <p>
+            <%block name="pagecontent6">This site collects <i>potentially</i> personally-identifying-information (PII) at account-registration time, such as name, email address, nationality, gender, age, and highest level of education. While all fields must be filled in to register, providing accurate information is optional (except that you must provide some valid email capable of receiving the registration confirmation link). We would, however, <i>appreciate it</i> if you would provide accurate information, as it would help support the site. This information is not sold to 3rd parties, and is only used by OST2 to understand student demographics to better serve you, and to accurately summarize site demographics to potential or current OST2 sponsors, who help fund the site.</%block>
+        </p>
+        <p>
+            <%block name="pagecontent7">OST2 is not meant for students under 13. To comply with <a href="https://en.wikipedia.org/wiki/Children%27s_Online_Privacy_Protection_Act">COPPA</a>, self-identifying with an age under 13 will lead to your account being closed.</%block>
+        </p>
+        <p>
+            <%block name="pagecontent8">OST2 uses two types of <a href="https://en.wikipedia.org/wiki/HTTP_cookie">cookies</a>: those which are built into the <a href="https://open.edx.org/">Open edX</a> platform that are used for maintaining state around the fact that a specific student is logged in. The other type of cookie is from <a href="https://en.wikipedia.org/wiki/Google_Analytics">Google Analytics</a>, which we use to track how many times pages are visited on the site, so we know how popular/active a given class is. Because completing registration requires agreeing to these Terms of Service, you are also agreeing to our use of these cookies. You can't say we didn't try to make a nice and simple Terms of Service page, instead of a giant legalese blob ;). </%block>
+        </p>
+    </section>
+</main>

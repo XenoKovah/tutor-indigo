@@ -10,21 +10,18 @@ config = {
     # Add here your new settings
     "defaults": {
         "VERSION": __version__,
-        "WELCOME_MESSAGE": "The place for all your online learning",
-        "PRIMARY_COLOR": "#3b85ff",  # cool blue
+        "WELCOME_MESSAGE": "\"The more you learn, the more you earn.\" - Warren Buffet",
+        "PRIMARY_COLOR": "#3b85ff",
         # Footer links are dictionaries with a "title" and "url"
         # To remove all links, run:
         # tutor config save --set INDIGO_FOOTER_NAV_LINKS=[] --set INDIGO_FOOTER_LEGAL_LINKS=[]
         "FOOTER_NAV_LINKS": [
-            {"title": "About", "url": "/about"},
-            {"title": "Contact", "url": "/contact"},
+            {"title": "About", "url": "https://ost2.fyi/About.html"},
+            {"title": "Learning Paths", "url": "https://ost2.fyi/Learning%20Paths.html"},
+            {"title": "How to Help", "url": "https://ost2.fyi/How%20to%20Help.html"},
         ],
         "FOOTER_LEGAL_LINKS": [
             {"title": "Terms of service", "url": "/tos"},
-            {
-                "title": "Indigo theme for Open edX",
-                "url": "https://github.com/overhangio/tutor-indigo",
-            },
         ],
     },
     "unique": {},
@@ -38,13 +35,13 @@ hooks.Filters.ENV_TEMPLATE_ROOTS.add_item(
 # This is where the theme is rendered in the openedx build directory
 hooks.Filters.ENV_TEMPLATE_TARGETS.add_items(
     [
-        ("indigo", "build/openedx/themes"),
+        ("indigo_OST2_palm", "build/openedx/themes"),
     ],
 )
 
 # Force the rendering of scss files, even though they are included in a "partials" directory
 hooks.Filters.ENV_PATTERNS_INCLUDE.add_item(
-    r"indigo/lms/static/sass/partials/lms/theme/"
+    r"indigo_OST2_palm/lms/static/sass/partials/lms/theme/"
 )
 
 # Load all configuration entries
