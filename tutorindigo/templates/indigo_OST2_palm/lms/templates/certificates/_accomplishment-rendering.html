@@ -41,6 +41,12 @@ course_mode_class = course_mode if course_mode else ''
                     <div class="accomplishment-course-name">
                         ${accomplishment_copy_course_name}
                     </div>
+                    <div class="accomplishment-regular-text subscript">
+                        <p>
+                        % if hours:
+                        Which takes an <i>average</i> of ${hours} hours to complete.
+                        % endif
+                    </div>
                     <div class="accomplishment-divider"></div>
                 </div>
             
