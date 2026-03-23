@@ -38,7 +38,7 @@ dev = [
 ]
 
 [project.entry-points."tutor.plugin.v1"]
-indigo = "tutorindigo.plugin"
+indigo_OST2_teak = "tutorindigo.plugin"
 
 [project.urls]
 Code = "https://github.com/overhangio/tutor-indigo"

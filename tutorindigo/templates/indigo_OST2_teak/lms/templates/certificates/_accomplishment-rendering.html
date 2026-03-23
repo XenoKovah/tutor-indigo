@@ -1,0 +1,114 @@
+<%page expression_filter="h"/>
+<%! from django.utils.translation import gettext as _ %>
+<%namespace name='static' file='../static_content.html'/>
+<%
+course_mode_class = course_mode if course_mode else ''
+%>
+
+<main class="accomplishment accomplishment-main">
+
+    <div class="wrapper-accomplishment-rendering">
+        <div class="accomplishment-rendering">
+
+            <span class="deco-corner deco-corner-tl"></span>
+            <span class="deco-corner deco-corner-tr"></span>
+            <span class="deco-corner deco-corner-bl"></span>
+            <span class="deco-corner deco-corner-br"></span>
+
+            <div class="main-accomplishment-container">
+                <!-- Banner section -->
+                <div class="accomplishment-banner-container">
+                    <img src="${static.url('certificates/images/certificate-banner.png')}" />
+                </div>
+            
+                <!-- Accomplishment Recipient section -->
+                <div class="accomplishment-recipient-meta">
+                    <div class="accomplishment-regular-text">
+                        And the undersigned, hereby certify that
+                    </div>
+                    <div class="accomplishment-recipient-name">
+                        % if accomplishment_copy_name:
+                        ${accomplishment_copy_name}
+                        % else:
+                        Student Name
+                        % endif
+                    </div>
+                    <div class="accomplishment-regular-text subscript">
+                        is <span class="bold italic">super awesome</span>!<br />
+                        Because they completed
+                    </div>
+            
+                    <div class="accomplishment-course-name">
+                        ${accomplishment_copy_course_name}
+                    </div>
+                    <div class="accomplishment-regular-text subscript">
+                        <p>
+                        % if hours:
+                        Which takes an <i>average</i> of ${hours} hours to complete.
+                        % endif
+                    </div>
+                    <div class="accomplishment-divider"></div>
+                </div>
+            
+                <div class="accomplishment-signatories-container">
+                    <div class="accomplishment-regular-text">Taught by</div>
+            
+                    <div class="list-signatories">
+                        % if certificate_data:
+                            % for signatory in certificate_data.get('signatories', []):
+                                % if signatory.get('signature_image_path'):
+                                    <div class="signatory instructor-meta">
+                                        <div class="instructor-name">${signatory['name']}</div>
+                                        <div class="instructor-title">${signatory['title']}</div>
+                                        <div class="instructor-title">${signatory['organization']}</div>
+                                        <img class="signatory-signature" src="${static.url(signatory['signature_image_path'])}" alt="${signatory['name']}" />
+                                    </div>
+                                % endif
+                            % endfor
+                        % endif
+                    </div>
+            
+                </div>
+            
+                <div class="verifier">
+                    <div class="accomplishment-regular-text">
+                        With class quality verified by
+                        <div class="verifier-name">Xeno Kovah, Founder, OpenSecurityTraining2</div>
+                    </div>
+                    <div class="accomplishment-verifier-signature"><img src="${static.url('certificates/images/XenoCertSignature.png')}" /></div>
+                </div>
+            
+            </div>
+        </div>
+    </div>
+
+    <div class="wrapper-accomplishment-metadata">
+        <div class="accomplishment-metadata">
+            <h2 class="accomplishment-metadata-title hd-6">${accomplishment_copy_more_about}</h2>
+
+            <div class="wrapper-metadata">
+                <dl class="metadata accomplishment-recipient">
+                    <dt class="label sr-only">${_("Awarded to:")}</dt>
+                    <dd class="value copy copy-meta">
+                        <span class="recipient-img">
+                            <img class="src" src="/static/certificates/images/demo-user-profile.png" alt="Recipient Image">
+                        </span>
+                        <div class="recipient-details">
+                            <h3 class="recipient-name">${accomplishment_copy_name}</h3>
+                            <p class="recipient-username">${accomplishment_copy_username} @ ${platform_name}</p>
+                        </div>
+                    </dd>
+                </dl>
+                <dl class="metadata accomplishment-id">
+                    <dt class="label copy copy-meta">${certificate_id_number_title}:</dt>
+                    <dd class="value copy copy-base">${certificate_id_number}</dd>
+                </dl>
+                <dl class="metadata accomplishment-date">
+                    <dt class="label copy copy-meta">${certificate_date_issued_title}</dt>
+                    <dd class="value copy copy-base">${certificate_date_issued}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+</main>
