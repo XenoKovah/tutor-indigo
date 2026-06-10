@@ -151,6 +151,17 @@ hooks.Filters.ENV_PATCHES.add_item(
         """
 RUN grep -q "defaultMessage: 'Discover'," node_modules/@edx/frontend-component-header/dist/learning-header/messages.js \\
  && sed -i "s/defaultMessage: 'Discover',/defaultMessage: 'Discover New Courses',/" node_modules/@edx/frontend-component-header/dist/learning-header/messages.js
+""",
+    )
+)
+
+# The license removal must run at the pre-npm-build anchor: post-npm-install
+# executes in a layer that only has package.json/package-lock + node_modules
+# (the app's src/ tree is COPY'd in afterwards, just before this anchor).
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-pre-npm-build-learning",
+        """
 RUN grep -qF "<CourseLicense license={license || undefined} />" src/courseware/course/sequence/Sequence.jsx \\
  && sed -i 's#<CourseLicense license={license || undefined} />##' src/courseware/course/sequence/Sequence.jsx
 """,
