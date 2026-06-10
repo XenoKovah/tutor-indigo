@@ -29,8 +29,8 @@ config: t.Dict[str, t.Dict[str, t.Any]] = {
         # tutor config save --set INDIGO_FOOTER_NAV_LINKS=[]
         "FOOTER_NAV_LINKS": [
             {"title": "About", "url": "https://ost2.fyi/About.html"},
-            {"title": "Learning Paths", "url": "https://ost2.fyi/Learning%20Paths.html"},
-            {"title": "How to Help", "url": "https://ost2.fyi/How%20to%20Help.html"},
+            {"title": "Learning Paths", "url": "https://ost2.fyi/Learning-Paths.html"},
+            {"title": "How to Help", "url": "https://ost2.fyi/How-to-Help.html"},
         ],
     },
     "unique": {},
