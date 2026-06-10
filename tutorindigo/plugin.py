@@ -306,6 +306,43 @@ RUN grep -qF "<StartOrResumeCourseCard />" src/course-home/outline-tab/OutlineTa
     )
 )
 
+# OST2 dark-mode fix: the course-home "Updates" panel (the WelcomeMessage /
+# whats-new box, e.g. "I updated both the ARM and x86 VMs...") renders LIGHT in
+# dark mode. The visible white box is NOT the parent-document alert
+# (WelcomeMessage's Paragon <Alert> carries `.alert-content`, which the brand
+# CSS makes `background: none` in BOTH modes - confirmed transparent on the
+# deployed page) but the LmsHtmlFragment IFRAME inside it: the iframe srcDoc
+# loads the legacy lms-main.css and renders a white body (class="inline-link").
+# Parent-document CSS (the brand dark partial) cannot reach inside that iframe,
+# so the prescribed "append to the dark partial" approach is impossible here.
+#
+# The header's ThemeToggleButton DOES inject a dark <style> into every iframe -
+# but ONLY on a toggle CLICK (addDarkThemeToIframes); when a course is OPENED
+# with dark mode already on, that injection never runs and the Updates iframe
+# stays white. We close that initial-load gap at the source: LmsHtmlFragment
+# builds the iframe srcDoc, and at render time `document.body` already carries
+# `indigo-dark-theme` (applied by the AddDarkTheme footer widget on load). Inject
+# a dark <style> into the srcDoc head whenever the parent body is dark. The
+# style's body bg/colour intentionally match the ThemeToggleButton's injected
+# block (`background-color: #0D0D0E;` + `color: #F8F8F8;`) so the toggle's
+# removeDarkThemeFromiframes() - which finds a style containing BOTH of those
+# substrings - cleanly removes ours when the user later toggles to light,
+# keeping runtime toggling consistent (verified live: the iframe goes dark on
+# load and the remove-matcher catches the injected style). Runs at the
+# pre-npm-build anchor (src/ present); grep-guarded on the unique
+# LmsHtmlFragment.css <link> so the build fails loudly if upstream restructures
+# the srcDoc. Single-quoted sed keeps the `${...}` JSX interpolation literal
+# (no shell expansion); `'\\''` emits the shell escape `'\''`.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-pre-npm-build-learning",
+        """
+RUN grep -qF '/static/LmsHtmlFragment.css">' src/course-home/outline-tab/LmsHtmlFragment.jsx \\
+ && sed -i 's@/static/LmsHtmlFragment.css">@/static/LmsHtmlFragment.css">${document.body.classList.contains('\\''indigo-dark-theme'\\'') ? '\\''<style>body{background-color: #0D0D0E; color: #F8F8F8;} a{color: #AEC7F6;} a:hover{color: #d3d3d3;}</style>'\\'' : '\\'''\\''}@' src/course-home/outline-tab/LmsHtmlFragment.jsx
+""",
+    )
+)
+
 # OST2: on the learner-dashboard (Learner Home) remove the right-hand sidebar -
 # the "Looking for a new challenge? / Find a course" promo
 # (#looking-for-challenge-widget) lives in .sidebar-column > .widget-sidebar -
