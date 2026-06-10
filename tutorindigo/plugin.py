@@ -183,6 +183,41 @@ RUN grep -qF '.discussion-posts {' node_modules/@edx/brand/themes/dark/_extras.s
     )
 )
 
+# OST2 dark-mode fix (Topics view, remaining light element): on the discussions
+# TOPIC route the breadcrumb bar (DiscussionsHome's <LegacyBreadcrumbMenu />,
+# rendered BETWEEN the action bar and the posts pane) renders LIGHT in dark
+# mode. Its markup is `<div class="breadcrumb-menu d-flex flex-row bg-light-200
+# box-shadow-down-1 ...">`; the only thing painting its background is Paragon's
+# `.bg-light-200 { background-color: #f8f7f6 !important; }` (light near-white).
+# The brand dark theme darkens `.bg-light-200` only in specific contexts
+# (.raised-card / .post-preview / .outline-sidebar-heading-wrapper) and never
+# defines `.breadcrumb-menu` (deployed CSS: `.breadcrumb-menu { z-index: 1 }`
+# only), so the breadcrumb bar keeps the light default. Append two bare,
+# dark-only rules (the brand wraps `_extras.scss` in `body.indigo-dark-theme {}`
+# via paragon/_dark.scss, so bare selectors inherit that prefix): darken the
+# bar to $primary-light (#292A2C, the same dark surface the working /posts
+# filter bar uses), and lighten the breadcrumb's `variant="outline"`
+# DropdownButtons (.btn-outline-primary, default text #374151 dark-grey) to
+# $text-color-primary (#DDDFE2) so they stay readable on the dark bar.
+# `body.indigo-dark-theme .breadcrumb-menu` (0,2,1) + !important beats
+# `.bg-light-200` (0,1,0) + !important. Appended to the same _extras.scss as the
+# filter-bar fix and guarded on the `.discussion-posts {` opener so the build
+# fails loudly if the brand restructures the dark partial. $primary-light /
+# $text-color-primary are defined in themes/dark/_variables.scss, imported
+# before extras in paragon/_dark.scss, so they are in scope.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-post-npm-install-discussions",
+        """
+RUN grep -qF '.discussion-posts {' node_modules/@edx/brand/themes/dark/_extras.scss \\
+ && printf '%s\\n' \\
+ '.breadcrumb-menu { background-color: $primary-light !important; }' \\
+ '.breadcrumb-menu .btn-outline-primary { color: $text-color-primary !important; }' \\
+ >> node_modules/@edx/brand/themes/dark/_extras.scss
+""",
+    )
+)
+
 # OST2: two build-time rewrites of the learning MFE, both grep-guarded so the
 # image build fails loudly if upstream moves or rewords the targeted code.
 #
