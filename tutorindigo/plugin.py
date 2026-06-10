@@ -132,6 +132,32 @@ hooks.Filters.ENV_PATCHES.add_item(
     )
 )
 
+# OST2 dark-mode fix: the discussions posts-list filter bar ("All ... posts
+# sorted by ...") renders with a WHITE background on the topic route
+# (/discussions/<course>/topics/<id>) while it is correctly dark on /posts.
+# The bar is PostFilterBar's Collapsible card (.filter-bar.collapsible-card-lg).
+# The brand dark partial only darkens that card via
+#   #root .header-action-bar + .d-flex.flex-row.position-relative ... .collapsible-card-lg
+# which relies on the content pane being the ADJACENT sibling of the action
+# bar. On the topic route a .breadcrumb-menu is inserted between them, so the
+# `+` adjacency breaks, the dark rule misses, and the light Paragon default
+# (.collapsible-card-lg{background:#fff}) wins. Append a dark-only,
+# bar-only rule that darkens the same card under .discussion-posts to the dark
+# surface ($primary-light = #292A2C, the colour the working /posts bar uses).
+# The partial's other selectors are bare and get the `body.indigo-dark-theme`
+# prefix from the importing stylesheet, so we append a bare selector too.
+# Guard on a known selector in the brand partial so the build fails loudly if
+# the file is renamed/restructured upstream.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-post-npm-install-discussions",
+        """
+RUN grep -qF '.discussion-posts {' node_modules/@edx/brand/themes/dark/_extras.scss \\
+ && printf '\\n.discussion-posts .filter-bar.collapsible-card-lg { background-color: $primary-light !important; }\\n' >> node_modules/@edx/brand/themes/dark/_extras.scss
+""",
+    )
+)
+
 # OST2: two build-time rewrites of the learning MFE, both grep-guarded so the
 # image build fails loudly if upstream moves or rewords the targeted code.
 #
