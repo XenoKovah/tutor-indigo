@@ -145,12 +145,22 @@ hooks.Filters.ENV_PATCHES.add_item(
 #    <CourseLicense /> under every unit and parseLicense() DEFAULTS to
 #    "All Rights Reserved" when the course has no license set, so every unit
 #    page shows a copyright notice that cannot be disabled by configuration.
+# 3. Brighten the dark-theme iframe text. The header's ThemeToggleButton
+#    injects a stylesheet into XBlock iframes setting body/link color #ccc
+#    (grey); recolour the body text to the brand near-white (#F8F8F8) and the
+#    links to the accent (#AEC7F6) so iframe-rendered units match native
+#    content. The matching .includes('color: #ccc;') in the toggle's removal
+#    path is rewritten too, so toggling dark off still strips the style.
 hooks.Filters.ENV_PATCHES.add_item(
     (
         "mfe-dockerfile-post-npm-install-learning",
         """
 RUN grep -q "defaultMessage: 'Discover'," node_modules/@edx/frontend-component-header/dist/learning-header/messages.js \\
  && sed -i "s/defaultMessage: 'Discover',/defaultMessage: 'Discover New Courses',/" node_modules/@edx/frontend-component-header/dist/learning-header/messages.js
+RUN grep -qF "a {color: #ccc;}" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js \\
+ && sed -i "s/a {color: #ccc;}/a {color: #AEC7F6;}/" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js
+RUN grep -qF "color: #ccc;" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js \\
+ && sed -i "s/color: #ccc;/color: #F8F8F8;/g" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js
 """,
     )
 )
