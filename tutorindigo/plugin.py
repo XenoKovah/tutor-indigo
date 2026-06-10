@@ -282,6 +282,34 @@ RUN grep -qF "tabs: data.tabs.map(tab => ({" src/course-home/data/api.js \\
     )
 )
 
+# OST2: on the learner-dashboard (Learner Home) remove the right-hand sidebar -
+# the "Looking for a new challenge? / Find a course" promo
+# (#looking-for-challenge-widget) lives in .sidebar-column > .widget-sidebar -
+# and let the course list span the full row. The brand's paragon/_footer.scss
+# (which the learner-dashboard compiles) sets `.course-list-column` to 70% and
+# `.sidebar-column` to 30% at the lg breakpoint, so hiding the sidebar would
+# otherwise leave the courses at 70%. Append a bare, NON-dark-scoped rule
+# (applies in both light and dark) that hides the whole sidebar column and
+# stretches the course list to 100%. The brand 70%/30% rules are qualified by
+# `#dashboard-container` (an id), so bare appended selectors must use
+# `!important` to win; verified against the deployed dashboard CSS/DOM that a
+# bare `!important` rule overrides the brand widths and hides the sidebar.
+# Appended to _footer.scss itself (where these exact selectors are defined) and
+# guarded on the `.sidebar-column {` opener so the build fails loudly if the
+# brand restructures the dashboard partial.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-post-npm-install-learner-dashboard",
+        """
+RUN grep -qF '.sidebar-column {' node_modules/@edx/brand/paragon/_footer.scss \\
+ && printf '%s\\n' \\
+ '.sidebar-column { display: none !important; }' \\
+ '.course-list-column { flex: 0 0 100% !important; max-width: 100% !important; }' \\
+ >> node_modules/@edx/brand/paragon/_footer.scss
+""",
+    )
+)
+
 # Include js file in lms main.html, main_django.html, and certificate.html
 
 hooks.Filters.ENV_PATCHES.add_items(
