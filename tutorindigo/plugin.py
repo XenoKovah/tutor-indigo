@@ -309,7 +309,7 @@ hooks.Filters.ENV_PATCHES.add_item(
         "mfe-dockerfile-pre-npm-build-learning",
         """
 RUN grep -qF "tabs: data.tabs.map(tab => ({" src/course-home/data/api.js \\
- && sed -i "s#tabs: data.tabs.map(tab => ({#tabs: data.tabs.filter(tab => tab.tabId !== 'dates').map(tab => ({#" src/course-home/data/api.js
+ && sed -i "s|tabs: data.tabs.map(tab => ({|tabs: data.tabs.filter(tab => tab.tabId !== 'dates').map(tab => ({|" src/course-home/data/api.js
 """,
     )
 )
