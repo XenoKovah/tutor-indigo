@@ -116,16 +116,9 @@ for mfe in indigo_styled_mfes:
             (
                 f"mfe-dockerfile-post-npm-install-{mfe}",
                 """
-RUN npm install @edly-io/indigo-frontend-component-footer@^3.0.0
 RUN npm install '@edx/frontend-component-header@npm:@edly-io/indigo-frontend-component-header@^4.0.0'
 RUN npm install '@edx/brand@npm:@edly-io/indigo-brand-openedx@^2.2.2'
 
-""",
-            ),
-            (
-                f"mfe-env-config-runtime-definitions-{mfe}",
-                """
-const { default: IndigoFooter } = await import('@edly-io/indigo-frontend-component-footer');
 """,
             ),
         ]
@@ -208,7 +201,7 @@ for mfe in indigo_styled_mfes:
                     id: 'default_contents',
                     type: DIRECT_PLUGIN,
                     priority: 1,
-                    RenderWidget: <IndigoFooter />,
+                    RenderWidget: <OST2Footer />,
                 },
             },
             {

@@ -1,5 +1,34 @@
 
 
+// Links-only replacement for @edly-io/indigo-frontend-component-footer: same
+// wrapper/nav markup and classes (so the brand package's light/dark footer CSS
+// still applies), but without the "Powered by" Tutor/Open edX logos and the
+// "Copyrights (c)YEAR. All Rights Reserved." line. Link URLs are used verbatim
+// because OST2's footer links are absolute (https://ost2.fyi/...).
+const OST2Footer = () => {
+  const footerNavLinks = getConfig().INDIGO_FOOTER_NAV_LINKS || [];
+
+  return (
+    <div className="wrapper wrapper-footer">
+      <footer id="footer" className="tutor-container">
+        <div className="footer-top">
+          {footerNavLinks.length > 0 && (
+            <nav className="nav-colophon" aria-label="About">
+              <ol>
+                {footerNavLinks.map((link) => (
+                  <li key={link.url}>
+                    <a href={link.url}>{link.title}</a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          )}
+        </div>
+      </footer>
+    </div>
+  );
+};
+
 let themeCookie = 'indigo-toggle-dark';
 let themeCookieExpiry = 90; // days
 
