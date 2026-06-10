@@ -178,6 +178,24 @@ RUN grep -qF "<CourseLicense license={license || undefined} />" src/courseware/c
     )
 )
 
+# OST2: drop the "Dates" tab from the learning header's course tab bar
+# (Course / Progress / Dates / Discussion). The tab list is normalized in
+# course-home/data/api.js, which maps the LMS tab metadata into the array
+# CourseTabsNavigation.jsx renders. We inject a `.filter(...)` ahead of that
+# `.map(...)` to discard the dates tab by its API id (`tab.tabId === 'dates'`,
+# the camelCased `tab_id`). Runs at the pre-npm-build anchor so the app's src/
+# tree is present; grep-guarded on the exact map opener so the build fails
+# loudly if upstream reshapes the normalizer.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-pre-npm-build-learning",
+        """
+RUN grep -qF "tabs: data.tabs.map(tab => ({" src/course-home/data/api.js \\
+ && sed -i "s#tabs: data.tabs.map(tab => ({#tabs: data.tabs.filter(tab => tab.tabId !== 'dates').map(tab => ({#" src/course-home/data/api.js
+""",
+    )
+)
+
 # Include js file in lms main.html, main_django.html, and certificate.html
 
 hooks.Filters.ENV_PATCHES.add_items(
