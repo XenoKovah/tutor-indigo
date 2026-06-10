@@ -331,6 +331,40 @@ RUN grep -qF "<CourseLicense license={license || undefined} />" src/courseware/c
     )
 )
 
+# OST2: suppress the phantom in-course notification-bell red dot. The learning
+# MFE's sidebar Notifications trigger renders a red dot (NotificationIcon's
+# <span class="bg-danger-500 rounded-circle ..."> shown when status==='active')
+# whose `notificationStatus.<courseId>` localStorage value DEFAULTS to 'active'
+# on first visit - the dot stays red "until seen" (the user opens the tray).
+# OST2's Notification table is empty server-wide and this mechanism is unused,
+# so the dot is purely phantom. Flip the first-visit default from 'active' to
+# 'inactive' so NotificationIcon renders null (no dot). The default is set in
+# the `if (!getLocalStorage(...)) { setLocalStorage(..., 'active'); }` init block
+# of BOTH sidebar implementations bundled in Teak - the legacy
+# sidebar/.../notifications/NotificationTrigger.jsx (the path that actually
+# renders bg-danger-500 in the deployed bundle) and the new-sidebar
+# .../discussions-notifications/DiscussionsNotificationsTrigger.tsx - so patch
+# both for robustness regardless of which sidebar is active at runtime. The
+# target line is uniquely identified by its trailing comment
+# ("// Show red dot on notificationTrigger until seen"), which the UpgradeNotification
+# re-show path's own `'active'` sets do NOT carry, so those are left intact
+# (OST2 has no paid-upgrade track, so that path never fires anyway). Runs at the
+# pre-npm-build anchor (src/ present); each sed is grep-guarded on the exact
+# comment-bearing line so the build fails loudly if upstream rewords it.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-pre-npm-build-learning",
+        """
+RUN F=src/courseware/course/sidebar/sidebars/notifications/NotificationTrigger.jsx; \\
+ grep -qF "'active'); // Show red dot on notificationTrigger until seen" "$F" \\
+ && sed -i "s|'active'); // Show red dot on notificationTrigger until seen|'inactive'); // OST2: default inactive so no phantom red dot (no notifications mechanism)|" "$F"
+RUN F=src/courseware/course/new-sidebar/sidebars/discussions-notifications/DiscussionsNotificationsTrigger.tsx; \\
+ grep -qF "'active'); // Show red dot on notificationTrigger until seen" "$F" \\
+ && sed -i "s|'active'); // Show red dot on notificationTrigger until seen|'inactive'); // OST2: default inactive so no phantom red dot (no notifications mechanism)|" "$F"
+""",
+    )
+)
+
 # OST2: drop the "Dates" tab from the learning header's course tab bar
 # (Course / Progress / Dates / Discussion). The tab list is normalized in
 # course-home/data/api.js, which maps the LMS tab metadata into the array
