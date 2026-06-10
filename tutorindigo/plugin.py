@@ -191,6 +191,41 @@ RUN grep -qF "color: #ccc;" node_modules/@edx/frontend-component-header/dist/The
     )
 )
 
+# OST2 dark-mode fix: the learning MFE "Search this course" content-search
+# modal renders LIGHT (white modal, white search box, black text) in dark
+# mode. The brand dark theme DOES ship courseware-search rules, but they are
+# keyed on `section.courseware-search` - and the Teak rewrite of
+# frontend-app-learning renders the modal as <dialog class="courseware-search">
+# (CoursewareSearch.jsx), so those `section.` rules never match and the
+# light default (.courseware-search{background:#fff}) wins. Append dark-only
+# rules keyed on the real `.courseware-search` element (which is unique to
+# this modal) giving the dialog the dark page surface, the searchfield/input a
+# dark surface with light text, and the summary/result titles light text.
+# Appended to the brand dark partial the learning MFE compiles; it is
+# @import-ed inside `body.indigo-dark-theme {}` and uses bare selectors, so the
+# appended selectors are bare too and inherit the dark scope. Colours are the
+# brand dark palette ($body-bg #0D0D0E, $primary-light #292A2C, $text-color
+# #F8F8F8, $text-color-primary #DDDFE2); the border uses a plain hex (no brand
+# var for it). Guarded on a known selector so the build fails loudly if the
+# partial is renamed upstream.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-post-npm-install-learning",
+        """
+RUN grep -qF '.discussion-posts {' node_modules/@edx/brand/themes/dark/_extras.scss \\
+ && printf '%s\\n' \\
+ '.courseware-search { background: #0D0D0E !important; border-top-color: #777792 !important; color: #F8F8F8; }' \\
+ '.courseware-search h1, .courseware-search .h2 { color: #F8F8F8 !important; }' \\
+ '.courseware-search .pgn__searchfield, .courseware-search .pgn__searchfield-form, .courseware-search .pgn__searchfield_wrapper { background-color: #292A2C !important; }' \\
+ '.courseware-search .form-control { background-color: #292A2C !important; color: #F8F8F8 !important; border-color: #777792 !important; }' \\
+ '.courseware-search .courseware-search__results-summary { color: #DDDFE2 !important; }' \\
+ '.courseware-search .courseware-search-results__title, .courseware-search .courseware-search-results__title > span { color: #F8F8F8 !important; }' \\
+ '.courseware-search .courseware-search-results__item:not(:first-child) { border-top-color: #777792 !important; }' \\
+ >> node_modules/@edx/brand/themes/dark/_extras.scss
+""",
+    )
+)
+
 # The license removal must run at the pre-npm-build anchor: post-npm-install
 # executes in a layer that only has package.json/package-lock + node_modules
 # (the app's src/ tree is COPY'd in afterwards, just before this anchor).
