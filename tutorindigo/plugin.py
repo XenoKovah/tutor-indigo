@@ -132,6 +132,23 @@ hooks.Filters.ENV_PATCHES.add_item(
     )
 )
 
+# OST2: relabel the learning header's course-banner "Discover" link to
+# "Discover New Courses". The string is the Edly header package's compiled
+# defaultMessage (used for every locale - the package ships no translations),
+# so rewrite it at image build time. The grep makes the build fail loudly if
+# the package layout or wording ever changes. The user-menu "Discover" item
+# that shares this message is hidden by frontend-rgg-widgets, so the banner
+# link is the only remaining use.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-post-npm-install-learning",
+        """
+RUN grep -q "defaultMessage: 'Discover'," node_modules/@edx/frontend-component-header/dist/learning-header/messages.js \\
+ && sed -i "s/defaultMessage: 'Discover',/defaultMessage: 'Discover New Courses',/" node_modules/@edx/frontend-component-header/dist/learning-header/messages.js
+""",
+    )
+)
+
 # Include js file in lms main.html, main_django.html, and certificate.html
 
 hooks.Filters.ENV_PATCHES.add_items(
