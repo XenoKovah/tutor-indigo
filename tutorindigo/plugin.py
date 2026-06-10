@@ -132,19 +132,27 @@ hooks.Filters.ENV_PATCHES.add_item(
     )
 )
 
-# OST2: relabel the learning header's course-banner "Discover" link to
-# "Discover New Courses". The string is the Edly header package's compiled
-# defaultMessage (used for every locale - the package ships no translations),
-# so rewrite it at image build time. The grep makes the build fail loudly if
-# the package layout or wording ever changes. The user-menu "Discover" item
-# that shares this message is hidden by frontend-rgg-widgets, so the banner
-# link is the only remaining use.
+# OST2: two build-time rewrites of the learning MFE, both grep-guarded so the
+# image build fails loudly if upstream moves or rewords the targeted code.
+#
+# 1. Relabel the learning header's course-banner "Discover" link to "Discover
+#    New Courses". The string is the Edly header package's compiled
+#    defaultMessage (used for every locale - the package ships no
+#    translations). The user-menu "Discover" item that shares this message is
+#    hidden by frontend-rgg-widgets, so the banner link is the only remaining
+#    use.
+# 2. Remove the per-unit course-license footer. Sequence.jsx mounts
+#    <CourseLicense /> under every unit and parseLicense() DEFAULTS to
+#    "All Rights Reserved" when the course has no license set, so every unit
+#    page shows a copyright notice that cannot be disabled by configuration.
 hooks.Filters.ENV_PATCHES.add_item(
     (
         "mfe-dockerfile-post-npm-install-learning",
         """
 RUN grep -q "defaultMessage: 'Discover'," node_modules/@edx/frontend-component-header/dist/learning-header/messages.js \\
  && sed -i "s/defaultMessage: 'Discover',/defaultMessage: 'Discover New Courses',/" node_modules/@edx/frontend-component-header/dist/learning-header/messages.js
+RUN grep -qF "<CourseLicense license={license || undefined} />" src/courseware/course/sequence/Sequence.jsx \\
+ && sed -i 's#<CourseLicense license={license || undefined} />##' src/courseware/course/sequence/Sequence.jsx
 """,
     )
 )
