@@ -132,6 +132,31 @@ hooks.Filters.ENV_PATCHES.add_item(
     )
 )
 
+# OST2 fix: on the authn Register/Sign-in pages the hero heading
+# ("Start learning with OpenSecurityTraining2") clips its trailing "2". The
+# heading is frontend-app-authn's image-layout hero - a Paragon `display-2`
+# h1 (font-size 4.875rem) constrained to mw-sm (max-width 708px) in the w-50
+# banner, with the site name in one long unbreakable word. The word is wider
+# than the box and `#root .layout` is overflow:hidden, so the right edge
+# (the "2") is cut off. Let the long word wrap instead of overflowing by
+# adding overflow-wrap/word-break to the hero heading - both the LargeLayout
+# h1 (.banner__image .display-2) and the Medium/ExtraSmall h1
+# (.banner__heading). Appended to the brand's paragon/_overrides.scss, which
+# authn @imports (src/index.scss) and which is light/theme-agnostic, so the
+# fix applies regardless of theme and is scoped to the authn hero only.
+# Guarded on a known selector so the build fails loudly if the partial moves.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-post-npm-install-authn",
+        """
+RUN grep -qF '.container-xl {' node_modules/@edx/brand/paragon/_overrides.scss \\
+ && printf '%s\\n' \\
+ '.banner__image .display-2, .banner__heading { overflow-wrap: break-word; word-break: break-word; }' \\
+ >> node_modules/@edx/brand/paragon/_overrides.scss
+""",
+    )
+)
+
 # OST2 dark-mode fix: the discussions posts-list filter bar ("All ... posts
 # sorted by ...") renders with a WHITE background on the topic route
 # (/discussions/<course>/topics/<id>) while it is correctly dark on /posts.
