@@ -35,7 +35,7 @@ show_gamification = settings.FEATURES.get('RG_GAMIFICATION', {}).get('ENABLED')
     </div>
     <div class="dropdown-user-menu hidden" aria-label=${_("More Options")} role="menu" id="user-menu" tabindex="-1">
         % if show_gamification:
-            <div class="mobile-nav-item dropdown-item dropdown-nav-item"><a href="${reverse('gamma_dashboard:gamma-dashboard')}" role="menuitem">${_("Your Badges")}</a></div>
+            <div class="mobile-nav-item dropdown-item dropdown-nav-item"><a href="${reverse('gamma_dashboard:gamma-dashboard')}" role="menuitem">${_("Your Accomplishments")}</a></div>
             <div class="mobile-nav-item dropdown-item dropdown-nav-item"><a href="${reverse('gamma_dashboard:gamma-leaderboard')}" role="menuitem">${_("Leaderboard")}</a></div>
         % endif
         ## Class Dashboard (course list) intentionally removed for OST2: the user
