@@ -237,6 +237,23 @@ RUN grep -qF '.discussion-posts {' node_modules/@edx/brand/themes/dark/_extras.s
 #    links to the accent (#AEC7F6) so iframe-rendered units match native
 #    content. The matching .includes('color: #ccc;') in the toggle's removal
 #    path is rewritten too, so toggling dark off still strips the style.
+#    The body{color} rule alone does NOT cover headings/titles: legacy XBlock
+#    HTML (e.g. the FAQ block "How can I submit corrections to video
+#    subtitles?") loads lms-main.css, whose `h1{color:#212529}` (and similar
+#    bare, non-!important heading/body colours) override the iframe body colour
+#    and render grey on the dark surface. Add (after the body recolour) a rule
+#    forcing common text elements (h1-h6, p, li, span, div, table cells, dl,
+#    label, blockquote, figcaption) to #F8F8F8 !important - an !important
+#    declaration beats every (non-!important) lms-main.css colour regardless of
+#    specificity - and upgrade the link rule to `a, a * {color: #AEC7F6
+#    !important;}` so link text (and inline children) stay the accent and are
+#    NOT swept up by the span/div force-light (`a *` (0,0,2) beats `span`/`div`
+#    (0,0,1)). The same recolour+heading block is mirrored in the AddDarkTheme
+#    on-load injector (mfe-env-config-buildtime-definitions) so load-in-dark and
+#    toggle-to-dark paint identically. The added rules keep both
+#    `background-color: #0D0D0E;` and `color: #F8F8F8;` substrings, so the
+#    toggle's removeDarkThemeFromiframes() matcher still strips the style on
+#    toggle-to-light. Guarded on the post-recolour `a {color: #AEC7F6;}` anchor.
 hooks.Filters.ENV_PATCHES.add_item(
     (
         "mfe-dockerfile-post-npm-install-learning",
@@ -247,6 +264,8 @@ RUN grep -qF "a {color: #ccc;}" node_modules/@edx/frontend-component-header/dist
  && sed -i "s/a {color: #ccc;}/a {color: #AEC7F6;}/" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js
 RUN grep -qF "color: #ccc;" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js \\
  && sed -i "s/color: #ccc;/color: #F8F8F8;/g" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js
+RUN grep -qF 'a {color: #AEC7F6;}' node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js \\
+ && sed -i 's|a {color: #AEC7F6;}|h1,h2,h3,h4,h5,h6,p,li,span,div,td,th,dt,dd,label,blockquote,figcaption {color: #F8F8F8 !important;} a, a * {color: #AEC7F6 !important;}|' node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js
 """,
     )
 )

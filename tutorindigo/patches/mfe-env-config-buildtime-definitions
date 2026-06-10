@@ -58,7 +58,8 @@ const AddDarkTheme = () => {
             background-color: #0D0D0E;
             color: #F8F8F8;
           }
-          a {color: #AEC7F6;}
+          h1,h2,h3,h4,h5,h6,p,li,span,div,td,th,dt,dd,label,blockquote,figcaption {color: #F8F8F8 !important;}
+          a, a * {color: #AEC7F6 !important;}
           a:hover{color: #d3d3d3;}
           `;
         if (iframes[index].contentDocument) { iframes[index].contentDocument.head.appendChild(style); }
