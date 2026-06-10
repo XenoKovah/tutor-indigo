@@ -19,11 +19,18 @@ section.home {
             margin: 0 7px;
             padding: 12px 0;
             .btn {
-                line-height: 20px;
-                padding: 9px 17px;
-                font-size: 14px;
+                // Size to match the MFE header's Paragon default-size Button
+                // (LearningLoggedOutButtons renders <Button variant=...> with
+                // no size prop). Measured on the live MFE: font-size 1.125rem
+                // (18px), line-height 1.3333 (24px), padding .5625rem 1rem
+                // (9px 16px), font-weight 400, 1px border, 6px radius => 44px
+                // tall. The legacy buttons were 14px/20px/500/9px-17px (40px
+                // tall), so they read smaller; bring them up to the MFE size.
+                line-height: 24px;
+                padding: 9px 16px;
+                font-size: 18px;
                 border-radius: 6px;
-                font-weight: 500;
+                font-weight: 400;
                 display: block;
                 // Match the MFE header's Paragon buttons, which use the
                 // @edly-io/indigo-brand-openedx $primary (#15376D), not the
