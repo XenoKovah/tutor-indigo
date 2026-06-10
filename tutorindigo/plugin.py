@@ -310,6 +310,29 @@ RUN grep -qF '.sidebar-column {' node_modules/@edx/brand/paragon/_footer.scss \\
     )
 )
 
+# OST2: on the learner-dashboard remove the "Refine" filter control (the
+# right-aligned outline button + its dropdown card). Course completion is
+# tracked differently here, so the filter misbehaves; the user wants it gone.
+# The control is .course-filter-controls-container (with #course-filter-controls-card
+# inside) in the brand's paragon/_footer.scss. Append a bare, NON-dark-scoped
+# rule (both modes) hiding the container. It is a block in the right column
+# above the course list and carries no layout the list depends on (the list is
+# already forced to 100% width by the sidebar-removal patch above), so hiding
+# it leaves the course list intact - confirmed against the deployed DOM that
+# hiding the container does not shift the course cards. Appended to _footer.scss
+# and guarded on the `.course-filter-controls-container {` opener.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-post-npm-install-learner-dashboard",
+        """
+RUN grep -qF '.course-filter-controls-container {' node_modules/@edx/brand/paragon/_footer.scss \\
+ && printf '%s\\n' \\
+ '.course-filter-controls-container { display: none !important; }' \\
+ >> node_modules/@edx/brand/paragon/_footer.scss
+""",
+    )
+)
+
 # Include js file in lms main.html, main_django.html, and certificate.html
 
 hooks.Filters.ENV_PATCHES.add_items(
