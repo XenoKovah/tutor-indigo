@@ -282,6 +282,30 @@ RUN grep -qF "tabs: data.tabs.map(tab => ({" src/course-home/data/api.js \\
     )
 )
 
+# OST2: remove the "Begin your course today / Start course" (and the matching
+# "Resume course") outline card. The course-home OutlineTab mounts
+# <StartOrResumeCourseCard /> at the top of the outline; the component renders a
+# single Card whose title is messages.startBlurb ("Begin your course today") or
+# messages.resumeBlurb and whose button is messages.start ("Start course") /
+# messages.resume. It is the ONLY mount of that component (grep-confirmed in
+# release/teak) and "Begin your course today" comes from nowhere else, so seding
+# out the JSX mount removes the card everywhere it appears (course outline /
+# home). Mirrors the CourseLicense removal: the now-unused
+# `import StartOrResumeCourseCard` is left in place because the build is
+# `fedx-scripts webpack` (no eslint gate), exactly as CourseLicense leaves its
+# import. Runs at the pre-npm-build anchor so the app's src/ tree is present;
+# grep-guarded on the exact mount token so the build fails loudly if upstream
+# renames or restructures it.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-pre-npm-build-learning",
+        """
+RUN grep -qF "<StartOrResumeCourseCard />" src/course-home/outline-tab/OutlineTab.jsx \\
+ && sed -i 's#<StartOrResumeCourseCard />##' src/course-home/outline-tab/OutlineTab.jsx
+""",
+    )
+)
+
 # OST2: on the learner-dashboard (Learner Home) remove the right-hand sidebar -
 # the "Looking for a new challenge? / Find a course" promo
 # (#looking-for-challenge-widget) lives in .sidebar-column > .widget-sidebar -
