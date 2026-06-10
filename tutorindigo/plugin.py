@@ -254,6 +254,18 @@ RUN grep -qF '.discussion-posts {' node_modules/@edx/brand/themes/dark/_extras.s
 #    `background-color: #0D0D0E;` and `color: #F8F8F8;` substrings, so the
 #    toggle's removeDarkThemeFromiframes() matcher still strips the style on
 #    toggle-to-light. Guarded on the post-recolour `a {color: #AEC7F6;}` anchor.
+# 4. Broadcast the theme to ALL iframes on toggle (Task A). The toggle's
+#    onToggleTheme() posted the {indigo-toggle-dark} message only to the
+#    #unit-iframe; the course-home LmsHtmlFragment iframes (no id) never heard
+#    it, so their self-managing srcDoc <script> (see the LmsHtmlFragment patch)
+#    could not react to a runtime toggle. Prepend an all-iframes broadcast that
+#    posts the same payload to every iframe's contentWindow with targetOrigin
+#    '*' (srcDoc iframes inherit the MFE origin, not the LMS origin the original
+#    post used, so '*' is required to reach them; the payload is a non-sensitive
+#    'dark'/'light' signal the receiver validates). The original #unit-iframe
+#    post is left intact (harmless redundant delivery). Guarded on the exact
+#    getElementById('unit-iframe') line; `&&` escaped `\\&` for sed; the result
+#    is valid JS (node --check) against @edly-io/...-header@4.1.0.
 hooks.Filters.ENV_PATCHES.add_item(
     (
         "mfe-dockerfile-post-npm-install-learning",
@@ -266,6 +278,8 @@ RUN grep -qF "color: #ccc;" node_modules/@edx/frontend-component-header/dist/The
  && sed -i "s/color: #ccc;/color: #F8F8F8;/g" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js
 RUN grep -qF 'a {color: #AEC7F6;}' node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js \\
  && sed -i 's|a {color: #AEC7F6;}|h1,h2,h3,h4,h5,h6,p,li,span,div,td,th,dt,dd,label,blockquote,figcaption {color: #F8F8F8 !important;} a, a * {color: #AEC7F6 !important;}|' node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js
+RUN grep -qF "var learningMFEUnitIframe = document.getElementById('unit-iframe');" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js \\
+ && sed -i "s|var learningMFEUnitIframe = document.getElementById('unit-iframe');|Array.from(document.getElementsByTagName('iframe')).forEach(function(f){if(f\\&\\&f.contentWindow){try{f.contentWindow.postMessage({'indigo-toggle-dark': theme}, '*');}catch(e){}}}); var learningMFEUnitIframe = document.getElementById('unit-iframe');|" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js
 """,
     )
 )
@@ -480,39 +494,56 @@ RUN F=src/course-home/progress-tab/grades/detailed-grades/SubsectionTitleCell.js
     )
 )
 
-# OST2 dark-mode fix: the course-home "Updates" panel (the WelcomeMessage /
-# whats-new box, e.g. "I updated both the ARM and x86 VMs...") renders LIGHT in
-# dark mode. The visible white box is NOT the parent-document alert
-# (WelcomeMessage's Paragon <Alert> carries `.alert-content`, which the brand
-# CSS makes `background: none` in BOTH modes - confirmed transparent on the
-# deployed page) but the LmsHtmlFragment IFRAME inside it: the iframe srcDoc
-# loads the legacy lms-main.css and renders a white body (class="inline-link").
-# Parent-document CSS (the brand dark partial) cannot reach inside that iframe,
-# so the prescribed "append to the dark partial" approach is impossible here.
+# OST2 dark-mode fix: the course-home "Updates"/"Handouts" panels render inside
+# LmsHtmlFragment IFRAMEs (srcDoc loading the legacy lms-main.css with a white
+# body), which parent-document CSS cannot reach. The earlier approach (fcf4249)
+# BAKED a conditional dark <style> into the srcDoc at React render time keyed on
+# the parent body class. That made dark<->light TOGGLING get stuck/biased: there
+# were then TWO independent dark-style mechanisms on the SAME iframes - the baked
+# srcDoc <style> AND the header ThemeToggleButton's addDarkThemeToIframes() live
+# <style> - and the toggle's removeDarkThemeFromiframes() (a single .find() that
+# removes ONE matching <style> per iframe) could not reliably clear both, so
+# toggle->light left a dark style behind (iframes stuck dark) and the
+# cookie/checkbox/body state desynced (biased to dark on refresh).
 #
-# The header's ThemeToggleButton DOES inject a dark <style> into every iframe -
-# but ONLY on a toggle CLICK (addDarkThemeToIframes); when a course is OPENED
-# with dark mode already on, that injection never runs and the Updates iframe
-# stays white. We close that initial-load gap at the source: LmsHtmlFragment
-# builds the iframe srcDoc, and at render time `document.body` already carries
-# `indigo-dark-theme` (applied by the AddDarkTheme footer widget on load). Inject
-# a dark <style> into the srcDoc head whenever the parent body is dark. The
-# style's body bg/colour intentionally match the ThemeToggleButton's injected
-# block (`background-color: #0D0D0E;` + `color: #F8F8F8;`) so the toggle's
-# removeDarkThemeFromiframes() - which finds a style containing BOTH of those
-# substrings - cleanly removes ours when the user later toggles to light,
-# keeping runtime toggling consistent (verified live: the iframe goes dark on
-# load and the remove-matcher catches the injected style). Runs at the
-# pre-npm-build anchor (src/ present); grep-guarded on the unique
-# LmsHtmlFragment.css <link> so the build fails loudly if upstream restructures
-# the srcDoc. Single-quoted sed keeps the `${...}` JSX interpolation literal
-# (no shell expansion); `'\\''` emits the shell escape `'\''`.
+# Replace the un-removable srcDoc bake with a SELF-MANAGING approach that makes
+# each LmsHtmlFragment iframe the SOLE owner of its dark style and participates
+# in BOTH the load path and the toggle cycle:
+#  (1) Inject a tiny <script> into the srcDoc <head> (right after the
+#      LmsHtmlFragment.css <link>). On its own load it reads the parent
+#      `indigo-toggle-dark` cookie and, if dark, adds an id-keyed
+#      `<style id="ost2-iframe-dark">` (idempotent - never duplicates); it also
+#      listens for window 'message' {indigo-toggle-dark: 'dark'|'light'} and
+#      adds/removes that same id-keyed style at runtime. This fixes load-in-dark
+#      reliably (no dependence on the racy parent MutationObserver) AND responds
+#      to toggles. CRUCIALLY the style uses `background:#0D0D0E;color:#F8F8F8;`
+#      (NO spaces after the colons), so it does NOT contain the parent
+#      remove-matcher substrings `background-color: #0D0D0E;` / `color: #F8F8F8;`
+#      - the parent never touches it, so there is exactly one owner and no
+#      duplicate-find ambiguity. The style also carries the Task-F heading/text
+#      force-light + accent-link rules so iframe titles aren't grey.
+#  (2) Make the ThemeToggleButton BROADCAST the theme to ALL iframes (see the
+#      learning post-npm-install patch) instead of only #unit-iframe, with
+#      targetOrigin '*' (srcDoc iframes inherit the MFE origin, not the LMS
+#      origin the old code used, so an LMS-origin-targeted post would never
+#      reach them). The script validates the payload is 'dark'/'light' before
+#      acting, so '*' is safe for this non-sensitive theme signal.
+# GUARANTEES: load-in-dark -> iframes dark; toggle->light -> ALL iframes light;
+# toggle->dark -> ALL iframes dark; repeatable (id-keyed apply/remove is
+# idempotent); refresh respects the cookie (nothing writes dark spuriously).
+# The injected <script> is one line, uses only double-quoted JS strings (no
+# single quotes -> the single-quoted sed needs no '\\'' escapes), has no
+# backticks or `${...}` (safe inside the JSX template literal) and no `{#`/`{{`/
+# `{%` (safe through Jinja). Runs at the pre-npm-build anchor (src/ present);
+# grep-guarded on the unique LmsHtmlFragment.css <link>. The `&&` in the script
+# is escaped `\\&` so sed does not expand `&` to the whole match. Verified: the
+# resulting JSX parses (babel) and the script body is valid JS (node --check).
 hooks.Filters.ENV_PATCHES.add_item(
     (
         "mfe-dockerfile-pre-npm-build-learning",
         """
 RUN grep -qF '/static/LmsHtmlFragment.css">' src/course-home/outline-tab/LmsHtmlFragment.jsx \\
- && sed -i 's@/static/LmsHtmlFragment.css">@/static/LmsHtmlFragment.css">${document.body.classList.contains('\\''indigo-dark-theme'\\'') ? '\\''<style>body{background-color: #0D0D0E; color: #F8F8F8;} a{color: #AEC7F6;} a:hover{color: #d3d3d3;}</style>'\\'' : '\\'''\\''}@' src/course-home/outline-tab/LmsHtmlFragment.jsx
+ && sed -i 's|/static/LmsHtmlFragment.css">|/static/LmsHtmlFragment.css"><script>(function(){var I="ost2-iframe-dark";var C="body{background:#0D0D0E;color:#F8F8F8;}h1,h2,h3,h4,h5,h6,p,li,span,div,td,th,dt,dd,label,blockquote,figcaption{color:#F8F8F8 !important;}a,a *{color:#AEC7F6 !important;}a:hover{color:#d3d3d3 !important;}";function ap(on){var e=document.getElementById(I);if(on){if(!e){e=document.createElement("style");e.id=I;e.textContent=C;document.head.appendChild(e);}}else if(e){e.remove();}}ap(document.cookie.indexOf("indigo-toggle-dark=dark")!==-1);window.addEventListener("message",function(ev){var d=ev.data\\&\\&ev.data["indigo-toggle-dark"];if(d==="dark"){ap(true);}else if(d==="light"){ap(false);}});})();</script>|' src/course-home/outline-tab/LmsHtmlFragment.jsx
 """,
     )
 )
