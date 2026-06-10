@@ -360,6 +360,38 @@ RUN grep -qF "<ProgressTabRelatedLinksSlot />" src/course-home/progress-tab/Prog
     )
 )
 
+# OST2: change the Progress page detailed-grades section toggles from a
+# down/up caret to a disclosure triangle: RIGHT (toward the title) when
+# collapsed, DOWN when expanded. SubsectionTitleCell.jsx renders the toggle as
+# two mutually-exclusive Paragon <Collapsible.Visible> children inside the
+# .collapsible-trigger - `whenClosed` shows <Icon src={ArrowDropDown} /> (the
+# down triangle) and `whenOpen` shows <Icon src={ArrowDropUp} /> (the up
+# triangle). Paragon's Collapsible.Visible MOUNTS/UNMOUNTS its child on
+# open/close (it returns the child or null, with no persistent open/closed
+# wrapper class - confirmed in the deployed bundle), so a CSS `transform:
+# rotate(...)` keyed on a state class cannot work; the robust fix is to swap the
+# icons in source. Repoint `whenClosed` to ArrowRight (Paragon's filled
+# right-pointing triangle, path `M10 17l5-5l-5-5v10z`, already bundled in the
+# deployed app) and `whenOpen` to ArrowDropDown (down), and add ArrowRight to
+# the icon import. ArrowDropDown/ArrowDropUp are used ONLY here in the progress
+# tab (grep-confirmed), so the swap is fully scoped. Runs at the pre-npm-build
+# anchor (src/ present); each sed is grep-guarded on its exact target line so
+# the build fails loudly if upstream rewords the toggle or the import.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-pre-npm-build-learning",
+        """
+RUN F=src/course-home/progress-tab/grades/detailed-grades/SubsectionTitleCell.jsx; \\
+ grep -qF '<Collapsible.Visible whenClosed><Icon src={ArrowDropDown} /></Collapsible.Visible>' "$F" \\
+ && grep -qF '<Collapsible.Visible whenOpen><Icon src={ArrowDropUp} /></Collapsible.Visible>' "$F" \\
+ && grep -qF '  ArrowDropDown,' "$F" \\
+ && sed -i 's#<Collapsible.Visible whenOpen><Icon src={ArrowDropUp} /></Collapsible.Visible>#<Collapsible.Visible whenOpen><Icon src={ArrowDropDown} /></Collapsible.Visible>#' "$F" \\
+ && sed -i 's#<Collapsible.Visible whenClosed><Icon src={ArrowDropDown} /></Collapsible.Visible>#<Collapsible.Visible whenClosed><Icon src={ArrowRight} /></Collapsible.Visible>#' "$F" \\
+ && sed -i 's#  ArrowDropDown,#  ArrowDropDown,\\n  ArrowRight,#' "$F"
+""",
+    )
+)
+
 # OST2 dark-mode fix: the course-home "Updates" panel (the WelcomeMessage /
 # whats-new box, e.g. "I updated both the ARM and x86 VMs...") renders LIGHT in
 # dark mode. The visible white box is NOT the parent-document alert
