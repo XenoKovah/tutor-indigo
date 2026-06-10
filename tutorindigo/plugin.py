@@ -338,6 +338,28 @@ RUN grep -qF "<StartOrResumeCourseCard />" src/course-home/outline-tab/OutlineTa
     )
 )
 
+# OST2: remove the "Related links" sidebar box from the course Progress page.
+# ProgressTab.jsx mounts <ProgressTabRelatedLinksSlot /> in the right-hand side
+# panel; that slot's sole content is <RelatedLinks />, which renders the
+# "Related links" card (an <h3>Related links</h3> over a "Course outline /
+# A birds-eye view of your course content." link, plus an optional Dates link).
+# It is the ONLY mount of that slot in release/teak (grep-confirmed: one import,
+# one use at ProgressTab.jsx:42), so seding out the JSX mount removes the box
+# entirely. Mirrors the CourseLicense / StartOrResumeCourseCard removals: the
+# now-unused `import ProgressTabRelatedLinksSlot` is left in place because the
+# build is `fedx-scripts webpack` (no eslint gate). Runs at the pre-npm-build
+# anchor so the app's src/ tree is present; grep-guarded on the exact mount
+# token so the build fails loudly if upstream renames/restructures the slot.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-pre-npm-build-learning",
+        """
+RUN grep -qF "<ProgressTabRelatedLinksSlot />" src/course-home/progress-tab/ProgressTab.jsx \\
+ && sed -i 's#<ProgressTabRelatedLinksSlot />##' src/course-home/progress-tab/ProgressTab.jsx
+""",
+    )
+)
+
 # OST2 dark-mode fix: the course-home "Updates" panel (the WelcomeMessage /
 # whats-new box, e.g. "I updated both the ARM and x86 VMs...") renders LIGHT in
 # dark mode. The visible white box is NOT the parent-document alert
