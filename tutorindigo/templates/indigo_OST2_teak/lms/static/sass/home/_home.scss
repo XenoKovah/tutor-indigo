@@ -25,6 +25,28 @@ section.home {
                 border-radius: 6px;
                 font-weight: 500;
                 display: block;
+                // Match the MFE header's Paragon buttons, which use the
+                // @edly-io/indigo-brand-openedx $primary (#15376D), not the
+                // theme-wide $primary; hovers are Bootstrap darken 7.5%/10%.
+                &.sign-in-btn {
+                    background: #15376D;
+                    color: #fff;
+                    border-color: #15376D;
+                    &:hover {
+                        background: #0F274D;
+                        color: #fff;
+                        border-color: #0D2142;
+                    }
+                }
+                &.register-btn {
+                    background: none;
+                    color: #15376D;
+                    border-color: #15376D;
+                    &:hover {
+                        background: #15376D;
+                        color: #fff;
+                    }
+                }
             }
         }
     }
@@ -158,8 +180,8 @@ body.indigo-dark-theme {
                         border-color: $primary-d;
                     }
                     &.register-btn {
-                        color: $text-color-d;
-                        border-color: $text-color-d;
+                        color: $primary-d;
+                        border-color: $primary-d;
                         background: none;
                     }
                 }
