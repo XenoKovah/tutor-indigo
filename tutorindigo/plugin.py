@@ -221,12 +221,7 @@ for path in glob(
         hooks.Filters.ENV_PATCHES.add_item((os.path.basename(path), patch_file.read()))
 
 
-for mfe in indigo_styled_mfes:
-    PLUGIN_SLOTS.add_item(
-        (
-            mfe,
-            "footer_slot",
-            """ 
+_footer_slot_ops = """
             {
                 op: PLUGIN_OPERATIONS.Hide,
                 widgetId: 'default_contents',
@@ -249,6 +244,24 @@ for mfe in indigo_styled_mfes:
                     RenderWidget: AddDarkTheme,
                 },
             },
-  """,
-        ),
-    )
+  """
+
+# Register the footer ops under both the legacy `footer_slot` alias and the
+# namespaced id `org.openedx.frontend.layout.footer.v1`. Newer MFEs (e.g.
+# learner-dashboard) render the new id and ignore the legacy alias, so the
+# AddDarkTheme widget - which applies the `indigo-dark-theme` body class -
+# only ran on the older MFEs and dark mode silently rendered light there.
+footer_slots = [
+    "footer_slot",
+    "org.openedx.frontend.layout.footer.v1",
+]
+
+for mfe in indigo_styled_mfes:
+    for footer_slot in footer_slots:
+        PLUGIN_SLOTS.add_item(
+            (
+                mfe,
+                footer_slot,
+                _footer_slot_ops,
+            ),
+        )
