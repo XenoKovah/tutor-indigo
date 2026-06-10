@@ -251,6 +251,38 @@ RUN grep -qF '.discussion-posts {' node_modules/@edx/brand/themes/dark/_extras.s
     )
 )
 
+# OST2: hide the course-outline completion indicator circles. The outline
+# section/sequence titles (SectionTitle.tsx / SequenceTitle.tsx) render a
+# Paragon <Icon> completion marker - CheckCircleOutline (the grey "o",
+# .text-gray-400) when incomplete, CheckCircle (the green check, .text-success)
+# when complete - as the sole child of a `.col-auto.p-0` column next to the
+# title. Completion is tracked differently here, so the user wants these
+# outline indicators gone entirely (both states), in BOTH light and dark mode.
+# Append a bare, NON-dark-scoped rule that hides ONLY those icons: scoped under
+# `.course-outline-tab` and to the `.col-auto.p-0 > .pgn__icon` that holds the
+# completion marker, so it cannot touch the Progress tab's own check icons
+# (which use .text-success-300/500 and are not inside .course-outline-tab) nor
+# the "hidden from TOC" DisabledVisible icon (which is not in a `.col-auto.p-0`).
+# This is purely an outline indicator hide - it does NOT disable the Progress
+# tab (no Pages&Resources / "Configure progress" change). Confirmed against the
+# deployed learning DOM that this selector matches exactly the 8 outline circles,
+# leaves titles intact (the emptied `.col-auto` collapses to 0px), and affects
+# nothing outside the outline. Appended to the brand's paragon/_learning.scss,
+# which is @import-ed BEFORE `@import "./dark"` so it is unscoped (both modes),
+# and guarded on the `.course-outline-tab {` opener so the build fails loudly if
+# the brand restructures the learning partial.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-post-npm-install-learning",
+        """
+RUN grep -qF '.course-outline-tab {' node_modules/@edx/brand/paragon/_learning.scss \\
+ && printf '%s\\n' \\
+ '.course-outline-tab .col-auto.p-0 > .pgn__icon.text-gray-400, .course-outline-tab .col-auto.p-0 > .pgn__icon.text-success { display: none !important; }' \\
+ >> node_modules/@edx/brand/paragon/_learning.scss
+""",
+    )
+)
+
 # The license removal must run at the pre-npm-build anchor: post-npm-install
 # executes in a layer that only has package.json/package-lock + node_modules
 # (the app's src/ tree is COPY'd in afterwards, just before this anchor).
