@@ -271,7 +271,7 @@ hooks.Filters.ENV_PATCHES.add_item(
         "mfe-dockerfile-post-npm-install-learning",
         """
 RUN grep -q "defaultMessage: 'Discover'," node_modules/@edx/frontend-component-header/dist/learning-header/messages.js \\
- && sed -i "s/defaultMessage: 'Discover',/defaultMessage: 'Discover New Courses',/" node_modules/@edx/frontend-component-header/dist/learning-header/messages.js
+ && sed -i "s/defaultMessage: 'Discover',/defaultMessage: 'See All Courses',/" node_modules/@edx/frontend-component-header/dist/learning-header/messages.js
 RUN grep -qF "a {color: #ccc;}" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js \\
  && sed -i "s/a {color: #ccc;}/a {color: #AEC7F6;}/" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js
 RUN grep -qF "color: #ccc;" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js \\
@@ -785,3 +785,40 @@ for mfe in indigo_styled_mfes:
                 _footer_slot_ops,
             ),
         )
+
+# OST2: hide the in-course notifications bell from logged-out visitors. The
+# sidebar trigger renders for everyone, but its tray can never be valid
+# without a session - clicking it as an anonymous user (public courses)
+# throws inside the tray and the MFE error boundary replaces the page with
+# "An unexpected error occurred. Please click the button below to refresh
+# the page." Render nothing when frontend-platform has no authenticated
+# user. Mirrors the red-dot patch above: BOTH sidebar implementations
+# bundled in Teak are patched - the legacy
+# sidebar/.../notifications/NotificationTrigger.jsx (the path live in the
+# deployed bundle) and the new-sidebar
+# .../discussions-notifications/DiscussionsNotificationsTrigger.tsx (its
+# combined trigger also only opens auth-dependent trays). The legacy early
+# return is injected just before the component's single top-level
+# `  return (` so it runs after all hooks (auth state is fixed for the
+# lifetime of the page, so hook order stays stable); the count check pins
+# that line to exactly one occurrence. The new-sidebar edit extends the
+# existing availability guard. Runs at the pre-npm-build anchor (src/
+# present); every sed is grep-guarded so the build fails loudly if upstream
+# reshapes the code.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-pre-npm-build-learning",
+        """
+RUN F=src/courseware/course/sidebar/sidebars/notifications/NotificationTrigger.jsx; \\
+ grep -qF "import { useIntl } from '@edx/frontend-platform/i18n';" "$F" \\
+ && [ "$(grep -c '^  return ($' "$F")" = 1 ] \\
+ && sed -i "s#^import { useIntl } from '@edx/frontend-platform/i18n';\\$#&\\nimport { getAuthenticatedUser } from '@edx/frontend-platform/auth';#" "$F" \\
+ && sed -i "s#^  return (\\$#  if (!getAuthenticatedUser()) { return null; } // OST2: the bell can never be valid logged-out\\n  return (#" "$F"
+RUN F=src/courseware/course/new-sidebar/sidebars/discussions-notifications/DiscussionsNotificationsTrigger.tsx; \\
+ grep -qF "import { useIntl } from '@edx/frontend-platform/i18n';" "$F" \\
+ && grep -qF "if (!isDiscussionbarAvailable && !isNotificationbarAvailable) { return null; }" "$F" \\
+ && sed -i "s#^import { useIntl } from '@edx/frontend-platform/i18n';\\$#&\\nimport { getAuthenticatedUser } from '@edx/frontend-platform/auth';#" "$F" \\
+ && sed -i "s#if (!isDiscussionbarAvailable && !isNotificationbarAvailable) { return null; }#if ((!isDiscussionbarAvailable \\&\\& !isNotificationbarAvailable) || !getAuthenticatedUser()) { return null; } // OST2: hide for logged-out visitors#" "$F"
+""",
+    )
+)
