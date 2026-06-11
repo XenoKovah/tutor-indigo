@@ -63,11 +63,26 @@
     .xmodule_display.xmodule_StaticTabBlock ul {
         color: $text-color-d;
     }
-    .xmodule_display.xmodule_AboutBlock pre, 
-    .xmodule_display.xmodule_CourseInfoBlock pre, 
-    .xmodule_display.xmodule_HtmlBlock pre, 
+    .xmodule_display.xmodule_AboutBlock pre,
+    .xmodule_display.xmodule_CourseInfoBlock pre,
+    .xmodule_display.xmodule_HtmlBlock pre,
     .xmodule_display.xmodule_StaticTabBlock pre {
         color: $text-color-d;
+    }
+    // OST2: course-authored headings inside HTML/About/CourseInfo/StaticTab
+    // blocks otherwise keep the platform rule
+    // `.xmodule_display.xmodule_HtmlBlock h1 { color: var(--body-color,#313131) }`
+    // (specificity 0,2,1), which beats the generic `.indigo-dark-theme h1` (0,1,1)
+    // and leaves them grey in dark mode (e.g. "The repository URLs for this class
+    // are:"). Scope them here at (0,3,1) so h1-h6 flip to the dark text colour,
+    // mirroring the p/ol/ul/pre rules above. Covers library-rendered HtmlBlocks too.
+    .xmodule_display.xmodule_AboutBlock,
+    .xmodule_display.xmodule_CourseInfoBlock,
+    .xmodule_display.xmodule_HtmlBlock,
+    .xmodule_display.xmodule_StaticTabBlock {
+        h1, h2, h3, h4, h5, h6 {
+            color: $text-color-d;
+        }
     }
     .hd-1, .hd-2, .hd-3, .hd-4, .hd-5, .hd-6, .hd-7, .hd-8 {
         color: $text-color-d;
