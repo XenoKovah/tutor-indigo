@@ -284,6 +284,51 @@ RUN grep -qF "var learningMFEUnitIframe = document.getElementById('unit-iframe')
     )
 )
 
+# OST2 dark-mode IFRAME fixes (P2 - the header ThemeToggleButton). Three root
+# causes, split into three separate ENV_PATCHES blocks below so each fix is
+# self-contained. ALL of these blocks MUST run AFTER the block above (they depend
+# on its output: the `color: #ccc;` -> `color: #F8F8F8;` rename and the
+# heading-block CSS are already in place). Every sed is grep-guarded on the EXACT
+# post-previous-block string so the build fails loudly if upstream (or the
+# previous block) changes. The dark <style> injected here uses the SAME id
+# (`ost2-iframe-dark`) and equivalent CSS as P1 (mfe-env-config-buildtime-
+# definitions) and P3 (the LmsHtmlFragment srcDoc script), so every iframe has
+# exactly ONE owner of its dark style across all three mechanisms.
+#
+# JINJA/SED NOTES (apply to all three blocks): the sed replacements contain no
+# `|` (the sed delimiter) - e.g. the idempotency guard is split into two
+# `if (!x) { return; }` statements rather than one `if (!a || !b)` to avoid a
+# literal `|` closing the substitution - and no unescaped `&` (no `&`/`&&` in any
+# replacement; the RC2 remove-guard's `&&` is in the MATCH side, written
+# `\\&\\&` as elsewhere in this file). The RC3 forum-nav CSS is APPENDED after the
+# unique, newline-free `a:hover{color: #d3d3d3;}` anchor rather than by rewriting
+# the multi-line `style.textContent` (whose source has literal `\\n` sequences
+# that sed's `\\n` would misread as newlines). No `{{`/`{%`/`{#` appears in any
+# string. Verified: full sed chain applied to the real upstream file
+# (post-previous-block) + `node --check` passes.
+
+# ROOT CAUSE 1 - the toggle could not go light->dark on MFEs (dark->light and
+# legacy pages worked). onToggleTheme() chose its direction from
+# `cookies.get(themeCookie) === 'dark'`, which desyncs from what the user SEES
+# when a stale/duplicate `indigo-toggle-dark` cookie reads 'dark' - so the
+# toggle always took the "remove -> light" branch and never re-darkened. FIX:
+# decide direction from the ACTUAL visible state
+# (`document.body.classList.contains('indigo-dark-theme')`) so the toggle always
+# flips relative to what is on screen, immune to cookie desync. It still writes
+# the cookie to match the new state afterward (left intact). The checkbox
+# `defaultChecked` is switched to the same visible-state read for consistency.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-post-npm-install-learning",
+        """
+RUN grep -qF "if (cookies.get(themeCookie) === 'dark') {" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js \\
+ && sed -i "s|if (cookies.get(themeCookie) === 'dark') {|if (document.body.classList.contains('indigo-dark-theme')) {|" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js
+RUN grep -qF "defaultChecked: cookies.get(themeCookie) === 'dark'," node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js \\
+ && sed -i "s|defaultChecked: cookies.get(themeCookie) === 'dark',|defaultChecked: document.body.classList.contains('indigo-dark-theme'),|" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js
+""",
+    )
+)
+
 # OST2 dark-mode fix: the learning MFE "Search this course" content-search
 # modal renders LIGHT (white modal, white search box, black text) in dark
 # mode. The brand dark theme DOES ship courseware-search rules, but they are
