@@ -47,13 +47,12 @@ const AddDarkTheme = () => {
     return options;
   };
 
-  const addDarkThemeToIframes = () => {
-    const iframes = document.getElementsByTagName('iframe');
-    const iframesLength = iframes.length;
-    if (iframesLength > 0) {
-      Array.from({ length: iframesLength }).forEach((_, index) => {
-        const style = document.createElement('style');
-        style.textContent = `
+  // Shared id so P1 (this on-load injector), P2 (the header ThemeToggleButton)
+  // and P3 (the LmsHtmlFragment srcDoc script) all own AT MOST ONE dark style
+  // per iframe. Keeping the id identical lets injection be idempotent (skip if
+  // present) and removal complete (remove every node with this id).
+  const iframeDarkStyleId = 'ost2-iframe-dark';
+  const iframeDarkCss = `
           body{
             background-color: #0D0D0E;
             color: #F8F8F8;
@@ -62,9 +61,36 @@ const AddDarkTheme = () => {
           a, a * {color: #AEC7F6 !important;}
           a:hover{color: #d3d3d3;}
           `;
-        if (iframes[index].contentDocument) { iframes[index].contentDocument.head.appendChild(style); }
+
+  const addDarkThemeToIframes = () => {
+    const iframes = document.getElementsByTagName('iframe');
+    const iframesLength = iframes.length;
+    if (iframesLength > 0) {
+      Array.from({ length: iframesLength }).forEach((_, index) => {
+        const iframeDoc = iframes[index].contentDocument;
+        if (!iframeDoc || !iframeDoc.head) { return; }
+        // Idempotent: at most one dark style per iframe head. The 15s
+        // MutationObserver fires on every DOM mutation, so a non-idempotent
+        // append would stack many duplicate styles in a single iframe.
+        if (iframeDoc.getElementById(iframeDarkStyleId)) { return; }
+        const style = iframeDoc.createElement('style');
+        style.id = iframeDarkStyleId;
+        style.textContent = iframeDarkCss;
+        iframeDoc.head.appendChild(style);
       });
     }
+  };
+
+  const removeDarkThemeFromIframes = () => {
+    const iframes = document.getElementsByTagName('iframe');
+    const iframesLength = iframes.length;
+    Array.from({ length: iframesLength }).forEach((_, index) => {
+      const iframeDoc = iframes[index].contentDocument;
+      if (!iframeDoc || !iframeDoc.head) { return; }
+      // Remove ALL dark styles in this iframe head (not a single .find()), so
+      // any leftover/duplicate style is cleared on toggle->light.
+      iframeDoc.head.querySelectorAll(`style#${iframeDarkStyleId}`).forEach((node) => node.remove());
+    });
   };
 
   useEffect(() => {
@@ -78,7 +104,15 @@ const AddDarkTheme = () => {
     // This approach has a limitation: the observer first detects the iframe and then detects the docSrc. 
     // We need to wait for docSrc to fully load before appending the style tag.
     const observer = new MutationObserver(() => {
-      addDarkThemeToIframes();
+      // Decide from the ACTUAL visible state, not the (possibly stale) cookie:
+      // if the user toggled to light during this 15s window, P2 already removed
+      // the iframe styles - re-adding here would re-darken them. Only inject
+      // while the body is still dark; otherwise clear any leftovers.
+      if (document.body.classList.contains('indigo-dark-theme')) {
+        addDarkThemeToIframes();
+      } else {
+        removeDarkThemeFromIframes();
+      }
     });
 
     if (isThemeToggleEnabled && theme === 'dark') {

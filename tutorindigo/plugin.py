@@ -329,6 +329,30 @@ RUN grep -qF "defaultChecked: cookies.get(themeCookie) === 'dark'," node_modules
     )
 )
 
+# ROOT CAUSE 2 - LmsHtmlFragment handout iframes stayed BLACK on dark->light.
+# addDarkThemeToIframes() appended a NEW <style> every call, and the P1
+# MutationObserver fires on every DOM mutation for 15s, so an iframe accumulated
+# MANY duplicate dark <style> tags; removeDarkThemeFromiframes() used a single
+# `.find()` and removed only ONE, leaving the rest. FIX: make the ADD idempotent
+# (id-keyed `ost2-iframe-dark`, skip if one already exists in that iframe head ->
+# at most one per iframe) and the REMOVE complete (select `style#ost2-iframe-dark`
+# and remove ALL of them; the `.find()` callback removes each node and returns
+# false so `.find()` walks the whole static snapshot). This also drops the
+# brittle textContent-substring matcher.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-post-npm-install-learning",
+        """
+RUN grep -qF "        var style = document.createElement('style');" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js \\
+ && sed -i "s|        var style = document.createElement('style');|        var iframeDoc = iframes[ind].contentDocument; if (!iframeDoc) { return; } if (!iframeDoc.head) { return; } if (iframeDoc.getElementById('ost2-iframe-dark')) { return; } var style = iframeDoc.createElement('style'); style.id = 'ost2-iframe-dark';|" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js
+RUN grep -qF "querySelectorAll('style')" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js \\
+ && sed -i "s|querySelectorAll('style')|querySelectorAll('style#ost2-iframe-dark')|" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js
+RUN grep -qF "return style.textContent.includes('background-color: #0D0D0E;') && style.textContent.includes('color: #F8F8F8;');" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js \\
+ && sed -i "s|return style.textContent.includes('background-color: #0D0D0E;') \\&\\& style.textContent.includes('color: #F8F8F8;');|style.remove(); return false;|" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js
+""",
+    )
+)
+
 # OST2 dark-mode fix: the learning MFE "Search this course" content-search
 # modal renders LIGHT (white modal, white search box, black text) in dark
 # mode. The brand dark theme DOES ship courseware-search rules, but they are
