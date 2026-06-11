@@ -37,6 +37,9 @@ show_gamification = settings.FEATURES.get('RG_GAMIFICATION', {}).get('ENABLED')
         % if show_gamification:
             <div class="mobile-nav-item dropdown-item dropdown-nav-item"><a href="${reverse('gamma_dashboard:gamma-dashboard')}" role="menuitem">${_("Your Accomplishments")}</a></div>
             <div class="mobile-nav-item dropdown-item dropdown-nav-item"><a href="${reverse('gamma_dashboard:gamma-leaderboard')}" role="menuitem">${_("Leaderboard")}</a></div>
+            ## Divider between the RGG gamification items and the default account items,
+            ## to match the divider the MFE header (frontend-rgg-widgets) renders here.
+            <div class="dropdown-user-divider" role="separator"></div>
         % endif
         ## Class Dashboard (course list) intentionally removed for OST2: the user
         ## menu matches the learner-dashboard MFE's everywhere, and the header

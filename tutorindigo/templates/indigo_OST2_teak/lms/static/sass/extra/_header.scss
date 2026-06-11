@@ -141,6 +141,11 @@ header.global-header {
                         }
                     }
                 }
+                .dropdown-user-divider {
+                    height: 1px;
+                    margin: 4px 0;
+                    background: rgba(0, 0, 0, 0.1);
+                }
             }
         }
     }
@@ -346,6 +351,9 @@ body.indigo-dark-theme {
                                 color: $text-color-d;                         ;
                             }
                         }
+                    }
+                    .dropdown-user-divider {
+                        background: rgba(255, 255, 255, 0.15);
                     }
                 }
             }
