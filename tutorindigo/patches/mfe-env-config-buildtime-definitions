@@ -60,6 +60,8 @@ const AddDarkTheme = () => {
           h1,h2,h3,h4,h5,h6,p,li,span,div,td,th,dt,dd,label,blockquote,figcaption {color: #F8F8F8 !important;}
           a, a * {color: #AEC7F6 !important;}
           a:hover{color: #d3d3d3;}
+          .forum-nav-refine-bar,.forum-nav-sort-control,.forum-nav-thread-list,.forum-nav,.forum-nav-load-more {background-color: #0D0D0E !important;}
+          .forum-nav-refine-bar,.forum-nav-refine-bar *,.forum-nav-sort-control,.forum-nav-sort-control select,.forum-nav-load-more a {color: #F8F8F8 !important;}
           `;
 
   const addDarkThemeToIframes = () => {

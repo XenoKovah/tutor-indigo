@@ -353,6 +353,26 @@ RUN grep -qF "return style.textContent.includes('background-color: #0D0D0E;') &&
     )
 )
 
+# ROOT CAUSE 3 - inline-discussion (legacy XBlock) light bars stayed light in
+# dark mode because the injected CSS only set body bg + text/link colours, not
+# element-specific light backgrounds. The inline Discussion XBlock's grey filter
+# bar is `.forum-nav-refine-bar` (background `theme-color("light")` in
+# lms/static/sass/discussion/elements/_navigation.scss), as are
+# `.forum-nav-load-more` and the select controls. FIX: extend the injected dark
+# CSS (here AND in P1 AND P3) to darken the common forum-nav grey
+# bars/containers to #0D0D0E and their control text to #F8F8F8. Kept tight: post
+# threads (`.forum-nav-thread`, `$forum-color-background`) are intentionally NOT
+# targeted so post cards/readability are preserved.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-post-npm-install-learning",
+        """
+RUN grep -qF 'a:hover{color: #d3d3d3;}' node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js \\
+ && sed -i 's|a:hover{color: #d3d3d3;}|a:hover{color: #d3d3d3;}.forum-nav-refine-bar,.forum-nav-sort-control,.forum-nav-thread-list,.forum-nav,.forum-nav-load-more {background-color: #0D0D0E !important;}.forum-nav-refine-bar,.forum-nav-refine-bar *,.forum-nav-sort-control,.forum-nav-sort-control select,.forum-nav-load-more a {color: #F8F8F8 !important;}|' node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js
+""",
+    )
+)
+
 # OST2 dark-mode fix: the learning MFE "Search this course" content-search
 # modal renders LIGHT (white modal, white search box, black text) in dark
 # mode. The brand dark theme DOES ship courseware-search rules, but they are
@@ -612,7 +632,7 @@ hooks.Filters.ENV_PATCHES.add_item(
         "mfe-dockerfile-pre-npm-build-learning",
         """
 RUN grep -qF '/static/LmsHtmlFragment.css">' src/course-home/outline-tab/LmsHtmlFragment.jsx \\
- && sed -i 's|/static/LmsHtmlFragment.css">|/static/LmsHtmlFragment.css"><script>(function(){var I="ost2-iframe-dark";var C="body{background:#0D0D0E;color:#F8F8F8;}h1,h2,h3,h4,h5,h6,p,li,span,div,td,th,dt,dd,label,blockquote,figcaption{color:#F8F8F8 !important;}a,a *{color:#AEC7F6 !important;}a:hover{color:#d3d3d3 !important;}";function ap(on){var e=document.getElementById(I);if(on){if(!e){e=document.createElement("style");e.id=I;e.textContent=C;document.head.appendChild(e);}}else if(e){e.remove();}}ap(document.cookie.indexOf("indigo-toggle-dark=dark")!==-1);window.addEventListener("message",function(ev){var d=ev.data\\&\\&ev.data["indigo-toggle-dark"];if(d==="dark"){ap(true);}else if(d==="light"){ap(false);}});})();</script>|' src/course-home/outline-tab/LmsHtmlFragment.jsx
+ && sed -i 's|/static/LmsHtmlFragment.css">|/static/LmsHtmlFragment.css"><script>(function(){var I="ost2-iframe-dark";var C="body{background:#0D0D0E;color:#F8F8F8;}h1,h2,h3,h4,h5,h6,p,li,span,div,td,th,dt,dd,label,blockquote,figcaption{color:#F8F8F8 !important;}a,a *{color:#AEC7F6 !important;}a:hover{color:#d3d3d3 !important;}.forum-nav-refine-bar,.forum-nav-sort-control,.forum-nav-thread-list,.forum-nav,.forum-nav-load-more{background-color:#0D0D0E !important;}.forum-nav-refine-bar,.forum-nav-refine-bar *,.forum-nav-sort-control,.forum-nav-sort-control select,.forum-nav-load-more a{color:#F8F8F8 !important;}";function ap(on){var e=document.getElementById(I);if(on){if(!e){e=document.createElement("style");e.id=I;e.textContent=C;document.head.appendChild(e);}}else if(e){e.remove();}}ap(document.cookie.indexOf("indigo-toggle-dark=dark")!==-1);window.addEventListener("message",function(ev){var d=ev.data\\&\\&ev.data["indigo-toggle-dark"];if(d==="dark"){ap(true);}else if(d==="light"){ap(false);}});})();</script>|' src/course-home/outline-tab/LmsHtmlFragment.jsx
 """,
     )
 )
