@@ -15,6 +15,73 @@
 // #DEVELOPERS
 // ------------------------------
 
+// OST2 dark mode: when the cert page is viewed in dark mode, darken the PAGE
+// around the certificate. The legacy cert page compiles THIS bundle
+// (main-{ltr,rtl}.scss -> _build.scss, which @imports 'overrides' LAST),
+// separate from the main LMS bundle - so the dark rules in
+// lms/static/sass/certificates/_certificate.scss never reach it and the cert
+// page stayed fully light in dark mode (the cert bundle's _base.scss sets
+// `html, body { background: $white }`). The dark-theme.js bundled on cert
+// pages via `certificates_wv` toggles `indigo-dark-theme` on <body>.
+//
+// `body.indigo-dark-theme.certificate` (specificity 0,2,1) beats the screen
+// `html, body` rule (0,0,1) WITHOUT !important, so the screen rules below carry
+// no !important; that lets the upstream `@media print` re-whiten (which IS
+// !important) win when a cert is printed. A matching print re-whiten is added
+// too as belt-and-suspenders, mirroring lms/static/sass/certificates/_certificate.scss.
+//
+// Only the surrounding page surface + page-chrome text (banner intro, "About"
+// aside, footer copyright) are darkened/recoloured; the framed accomplishment
+// itself (.accomplishment-main / .accomplishment-rendering - the certificate
+// artwork) is intentionally left untouched so the certificate render stays
+// visually intact. Palette is the brand dark palette as literal hex (this
+// bundle's _config.scss does not import the theme's $*-d variables).
+body.indigo-dark-theme.certificate {
+    background: #0d0d0e;
+    color: #f8f8f8;
+
+    .wrapper-header {
+        background: #0d0d0e;
+        border-bottom: 1px solid #777792;
+    }
+
+    .introduction-copy,
+    aside.about,
+    aside.about .about-title,
+    aside.about .about-edx-title,
+    aside.about p,
+    .wrapper-footer,
+    .wrapper-footer .copy {
+        color: #f8f8f8;
+    }
+
+    aside.about a,
+    .wrapper-footer a {
+        color: #aec7f6;
+    }
+}
+
+@media print {
+    body.indigo-dark-theme.certificate {
+        background: #fff;
+        color: #000;
+
+        .wrapper-header {
+            background: #fff;
+        }
+
+        .introduction-copy,
+        aside.about,
+        aside.about .about-title,
+        aside.about .about-edx-title,
+        aside.about p,
+        .wrapper-footer,
+        .wrapper-footer .copy {
+            color: #000;
+        }
+    }
+}
+
 // ------------------------------
 // #SHAME
 // ------------------------------

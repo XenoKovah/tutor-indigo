@@ -24,7 +24,16 @@ enterprise_customer_portal = get_enterprise_learner_portal(request)
 ## Enterprises with the learner portal enabled should not show order history, as it does
 ## not apply to the learner's method of purchasing content.
 should_show_order_history = not enterprise_customer_portal
-show_gamification = settings.FEATURES.get('RG_GAMIFICATION', {}).get('ENABLED')
+## Visibility of the RGG gamification links is controlled at runtime by the Waffle flag
+## rgg.show_student_ui (default off; staff/superusers always preview), read in-process from
+## the gamma_dashboard LMS app. try/except so a missing or altered app never 500s the global
+## header. RG_GAMIFICATION stays enabled for URL + event-bridge wiring; only UI visibility
+## moved to the flag.
+try:
+    from gamma_dashboard.toggles import show_student_ui
+    show_gamification = show_student_ui(request)
+except Exception:
+    show_gamification = False
 %>
 
 <!-- NEW IN INDIGO update user icon -->
@@ -35,20 +44,18 @@ show_gamification = settings.FEATURES.get('RG_GAMIFICATION', {}).get('ENABLED')
     </div>
     <div class="dropdown-user-menu hidden" aria-label=${_("More Options")} role="menu" id="user-menu" tabindex="-1">
         % if show_gamification:
-            <div class="mobile-nav-item dropdown-item dropdown-nav-item"><a href="${reverse('gamma_dashboard:gamma-dashboard')}" role="menuitem">${_("Performance")}</a></div>
+            <div class="mobile-nav-item dropdown-item dropdown-nav-item"><a href="${reverse('gamma_dashboard:gamma-dashboard')}" role="menuitem">${_("Your Accomplishments")}</a></div>
             <div class="mobile-nav-item dropdown-item dropdown-nav-item"><a href="${reverse('gamma_dashboard:gamma-leaderboard')}" role="menuitem">${_("Leaderboard")}</a></div>
+            ## Divider between the RGG gamification items and the default account items,
+            ## to match the divider the MFE header (frontend-rgg-widgets) renders here.
+            <div class="dropdown-user-divider" role="separator"></div>
         % endif
-        % if not enterprise_customer_portal:
-            <div class="mobile-nav-item dropdown-item dropdown-nav-item"><a href="${reverse('dashboard')}" role="menuitem">${_("Dashboard")}</a></div>
-        % else:
-            <div class="mobile-nav-item dropdown-item dropdown-nav-item"><a href="${settings.ENTERPRISE_LEARNER_PORTAL_BASE_URL}/${enterprise_customer_portal.get('slug')}" role="menuitem">${_("Dashboard")}</a></div>
-        % endif
-
-        <div class="mobile-nav-item dropdown-item dropdown-nav-item"><a href="${urljoin(settings.PROFILE_MICROFRONTEND_URL, f'{user.username}')}" role="menuitem">${_("Profile")}</a></div>
-        <div class="mobile-nav-item dropdown-item dropdown-nav-item"><a href="${settings.ACCOUNT_MICROFRONTEND_URL}" role="menuitem">${_("Account")}</a></div>
-        % if should_show_order_history:
-            <div class="mobile-nav-item dropdown-item dropdown-nav-item"><a href="${settings.ORDER_HISTORY_MICROFRONTEND_URL}" role="menuitem">${_("Order History")}</a></div>
-        % endif
+        ## Class Dashboard (course list) intentionally removed for OST2: the user
+        ## menu matches the learner-dashboard MFE's everywhere, and the header
+        ## logo already links to the dashboard.
+        <div class="mobile-nav-item dropdown-item dropdown-nav-item"><a href="${urljoin(settings.PROFILE_MICROFRONTEND_URL, f'{user.username}')}" role="menuitem">${_("Public Profile")}</a></div>
+        <div class="mobile-nav-item dropdown-item dropdown-nav-item"><a href="${settings.ACCOUNT_MICROFRONTEND_URL}" role="menuitem">${_("Account Settings")}</a></div>
+        ## Order History intentionally removed for OST2 (no e-commerce).
         <div class="mobile-nav-item dropdown-item dropdown-nav-item"><a href="${reverse('logout')}" role="menuitem">${_("Sign Out")}</a></div>
     </div>
 </div>

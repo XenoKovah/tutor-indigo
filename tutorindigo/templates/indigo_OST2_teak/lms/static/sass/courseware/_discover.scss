@@ -80,6 +80,7 @@
                     background: #fff;
                     .course-image {
                         .cover-image {
+                            position: relative;            // OST2: anchor for the "New!" badge
                             height: 162px;
                             &:before {
                                 display: none;
@@ -88,6 +89,25 @@
                                 object-fit: cover;
                                 object-position: center;
                                 height: 100%;
+                            }
+                            // OST2: "New!" badge shown when the course's is_new /
+                            // is_newish flag is true (indexed via the
+                            // ost2_course_is_new_badge plugin; rendered by
+                            // course_card.underscore).
+                            .new-badge {
+                                position: absolute;
+                                top: 8px;
+                                left: 8px;
+                                z-index: 2;
+                                background: #c0392b;
+                                color: #fff;
+                                font-size: 12px;
+                                font-weight: 600;
+                                line-height: 1;
+                                padding: 4px 8px;
+                                border-radius: 10px;
+                                text-transform: uppercase;
+                                letter-spacing: .03em;
                             }
                         }
                     }
