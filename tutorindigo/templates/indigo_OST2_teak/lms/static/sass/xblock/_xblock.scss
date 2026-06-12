@@ -125,13 +125,18 @@
     // OST2 dark-mode fix: markdown/HTML table HEADERS keep the platform's
     // light-grey <th> background, illegible (white-on-light-grey) in dark mode -
     // same class of bug as the forum filter bar above. Darken the header cells to
-    // the dark surface and force header text light. Scoped to .xmodule_display
-    // content tables (covers markdown + HtmlBlock); !important since the platform
-    // <th> rule's specificity varies by table source. This XBlock renders in the
-    // Learning MFE's cross-origin unit iframe (body.indigo-dark-theme), so the fix
-    // must live here in the LMS theme, like the filter-bar fix above.
-    .xmodule_display table th,
-    .xmodule_display table thead th {
+    // the dark surface and force header text light. Scoped to `.xblock` (the
+    // UNIVERSAL xblock wrapper): markdown tables render under
+    // `.markdown_xblock`/`.xblock-student_view-markdown`, NOT `.xmodule_display`
+    // (which only wraps HtmlBlock/legacy XModules) - so the earlier
+    // `.xmodule_display table th` rule silently missed every markdown table
+    // (confirmed against the live BT2222 markdown table 2026-06-12: th was tag TH,
+    // class none, under `.markdown_xblock` not `.xmodule_display`). `.xblock`
+    // covers both. !important since the platform <th> rule's specificity varies by
+    // table source. This is the class-PRESENT iframe state; the class-absent state
+    // is handled by the injected `table th` rule (plugin.py RC4 + P3).
+    .xblock table th,
+    .xblock table thead th {
         background-color: $primary-light-d !important;
         color: $text-color-d !important;
     }
