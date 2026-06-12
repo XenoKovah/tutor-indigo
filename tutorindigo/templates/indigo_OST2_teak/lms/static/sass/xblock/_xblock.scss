@@ -122,6 +122,19 @@
             color: $text-color-d;
         }
     }
+    // OST2 dark-mode fix: markdown/HTML table HEADERS keep the platform's
+    // light-grey <th> background, illegible (white-on-light-grey) in dark mode -
+    // same class of bug as the forum filter bar above. Darken the header cells to
+    // the dark surface and force header text light. Scoped to .xmodule_display
+    // content tables (covers markdown + HtmlBlock); !important since the platform
+    // <th> rule's specificity varies by table source. This XBlock renders in the
+    // Learning MFE's cross-origin unit iframe (body.indigo-dark-theme), so the fix
+    // must live here in the LMS theme, like the filter-bar fix above.
+    .xmodule_display table th,
+    .xmodule_display table thead th {
+        background-color: $primary-light-d !important;
+        color: $text-color-d !important;
+    }
     .hd-1, .hd-2, .hd-3, .hd-4, .hd-5, .hd-6, .hd-7, .hd-8 {
         color: $text-color-d;
     }
