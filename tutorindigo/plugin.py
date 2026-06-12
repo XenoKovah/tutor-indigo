@@ -415,6 +415,25 @@ RUN grep -qF 'a:hover{color: #d3d3d3;}' node_modules/@edx/frontend-component-hea
     )
 )
 
+# ROOT CAUSE 4 - content <table> headers and the RGG done-block toggle kept their
+# LIGHT backgrounds in the injected iframe dark style (audit 2026-06-12). The
+# recolour block (ROOT CAUSE / line ~322) sets td,th + span TEXT to #F8F8F8 but
+# never their background, so a markdown/HTML <th> (platform light-grey) and the
+# .done_unmark / .done_mark pill (#EEE) render white-on-light-grey in the
+# class-absent iframe state (the .indigo-dark-theme _xblock.scss rules only cover
+# the class-PRESENT state). FIX: darken <th> and the done pills to #292A2C in the
+# same injected style, appended after the unique RC3 forum-nav tail so it joins
+# the single ost2-iframe-dark owner. Mirrored in P3 (LmsHtmlFragment) below.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-post-npm-install-learning",
+        """
+RUN grep -qF '.forum-nav-load-more a {color: #F8F8F8 !important;}' node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js \\
+ && sed -i 's|.forum-nav-load-more a {color: #F8F8F8 !important;}|.forum-nav-load-more a {color: #F8F8F8 !important;}table th,table thead th {background-color: #292A2C !important;}.done_unmark,.done_mark {background-color: #292A2C !important;}|' node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js
+""",
+    )
+)
+
 # OST2 dark-mode fix: the learning MFE "Search this course" content-search
 # modal renders LIGHT (white modal, white search box, black text) in dark
 # mode. The brand dark theme DOES ship courseware-search rules, but they are
@@ -445,6 +464,27 @@ RUN grep -qF '.discussion-posts {' node_modules/@edx/brand/themes/dark/_extras.s
  '.courseware-search .courseware-search__results-summary { color: #DDDFE2 !important; }' \\
  '.courseware-search .courseware-search-results__title, .courseware-search .courseware-search-results__title > span { color: #F8F8F8 !important; }' \\
  '.courseware-search .courseware-search-results__item:not(:first-child) { border-top-color: #777792 !important; }' \\
+ '.courseware-search .nav-link.active { color: #C9D6FF !important; }' \\
+ '.courseware-search .pgn__searchfield__button.btn-primary { color: #F8F8F8 !important; }' \\
+ >> node_modules/@edx/brand/themes/dark/_extras.scss
+""",
+    )
+)
+
+# OST2 dark-mode fix (audit 2026-06-12): the learning-MFE footer nav links
+# (footer.tutor-container a) keep their light-mode slate (#374151) in dark mode
+# -> ~1.88 contrast on the #0D0D0E page, nearly invisible. Recolour to the dark
+# accent (#AEC7F6). Appended to the same brand dark partial (body.indigo-dark-
+# theme scope) as the courseware-search block; guarded on the .discussion-posts
+# anchor. (Learning MFE only - other MFEs' footers would need the same append.)
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-post-npm-install-learning",
+        """
+RUN grep -qF '.discussion-posts {' node_modules/@edx/brand/themes/dark/_extras.scss \\
+ && printf '%s\\n' \\
+ 'footer.tutor-container a, footer.tutor-container a:visited { color: #AEC7F6 !important; }' \\
+ 'footer.tutor-container a:hover, footer.tutor-container a:focus { color: #C9D6FF !important; }' \\
  >> node_modules/@edx/brand/themes/dark/_extras.scss
 """,
     )
@@ -674,7 +714,7 @@ hooks.Filters.ENV_PATCHES.add_item(
         "mfe-dockerfile-pre-npm-build-learning",
         """
 RUN grep -qF '/static/LmsHtmlFragment.css">' src/course-home/outline-tab/LmsHtmlFragment.jsx \\
- && sed -i 's|/static/LmsHtmlFragment.css">|/static/LmsHtmlFragment.css"><script>(function(){var I="ost2-iframe-dark";var C="body{background:#0D0D0E;color:#F8F8F8;}h1,h2,h3,h4,h5,h6,p,li,span,div,td,th,dt,dd,label,blockquote,figcaption{color:#F8F8F8 !important;}a,a *{color:#AEC7F6 !important;}a:hover{color:#d3d3d3 !important;}.forum-nav-refine-bar,.forum-nav-sort-control,.forum-nav-thread-list,.forum-nav,.forum-nav-load-more{background-color:#0D0D0E !important;}.forum-nav-refine-bar,.forum-nav-refine-bar *,.forum-nav-sort-control,.forum-nav-sort-control select,.forum-nav-load-more a{color:#F8F8F8 !important;}";function ap(on){var e=document.getElementById(I);if(on){if(!e){e=document.createElement("style");e.id=I;e.textContent=C;document.head.appendChild(e);}}else if(e){e.remove();}}ap(document.cookie.indexOf("indigo-toggle-dark=dark")!==-1);window.addEventListener("message",function(ev){var d=ev.data\\&\\&ev.data["indigo-toggle-dark"];if(d==="dark"){ap(true);}else if(d==="light"){ap(false);}});})();</script>|' src/course-home/outline-tab/LmsHtmlFragment.jsx
+ && sed -i 's|/static/LmsHtmlFragment.css">|/static/LmsHtmlFragment.css"><script>(function(){var I="ost2-iframe-dark";var C="body{background:#0D0D0E;color:#F8F8F8;}h1,h2,h3,h4,h5,h6,p,li,span,div,td,th,dt,dd,label,blockquote,figcaption{color:#F8F8F8 !important;}a,a *{color:#AEC7F6 !important;}a:hover{color:#d3d3d3 !important;}.forum-nav-refine-bar,.forum-nav-sort-control,.forum-nav-thread-list,.forum-nav,.forum-nav-load-more{background-color:#0D0D0E !important;}.forum-nav-refine-bar,.forum-nav-refine-bar *,.forum-nav-sort-control,.forum-nav-sort-control select,.forum-nav-load-more a{color:#F8F8F8 !important;}table th,table thead th{background-color:#292A2C !important;}.done_unmark,.done_mark{background-color:#292A2C !important;}";function ap(on){var e=document.getElementById(I);if(on){if(!e){e=document.createElement("style");e.id=I;e.textContent=C;document.head.appendChild(e);}}else if(e){e.remove();}}ap(document.cookie.indexOf("indigo-toggle-dark=dark")!==-1);window.addEventListener("message",function(ev){var d=ev.data\\&\\&ev.data["indigo-toggle-dark"];if(d==="dark"){ap(true);}else if(d==="light"){ap(false);}});})();</script>|' src/course-home/outline-tab/LmsHtmlFragment.jsx
 """,
     )
 )

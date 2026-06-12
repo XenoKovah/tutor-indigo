@@ -135,6 +135,24 @@
         background-color: $primary-light-d !important;
         color: $text-color-d !important;
     }
+    // OST2 dark-mode fix (audit 2026-06-12): the RGG "Mark complete / Unmark"
+    // done-block toggle keeps its light pill (.done_unmark #999-on-#EEE) in dark
+    // mode -> illegible + glares against the dark unit. Give both states the dark
+    // surface + light text (the check is an <img>, unaffected). Content-iframe
+    // surface, so ALSO mirrored in the injected iframe stylesheet (plugin.py RC4)
+    // for the class-absent state.
+    .done_unmark, .done_mark {
+        background-color: $primary-light-d !important;
+        color: $text-color-d !important;
+    }
+    // OST2 dark-mode fix (audit 2026-06-12): video transcript cue links render at
+    // the platform link blue (#0074B5) on the dark transcript panel -> ~2.85
+    // contrast, dim. Lighten to the dark accent ($primary-d #AEC7F6).
+    .xmodule_display.xmodule_VideoBlock .subtitles a,
+    .xmodule_display.xmodule_VideoBlock a.transcript-start,
+    .xmodule_display.xmodule_VideoBlock a.transcript-end {
+        color: $primary-d;
+    }
     .hd-1, .hd-2, .hd-3, .hd-4, .hd-5, .hd-6, .hd-7, .hd-8 {
         color: $text-color-d;
     }
