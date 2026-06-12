@@ -8,6 +8,44 @@
         background: transparent;
         color: $text-color-d;
     }
+    // OST2 dark-mode fix (reported 2026-06-12): the inline-discussion XBlock's
+    // forum filter bar `.forum-nav-refine-bar` keeps its platform light-grey
+    // background (`theme-color("light")` = #E7E7E7, in edx-platform
+    // lms/static/sass/discussion/elements/_navigation.scss) in dark mode, while
+    // the generic `select` rule above flips the (transparent) "Show all posts" /
+    // "by recent activity" controls to near-white text -> white-on-light-grey,
+    // illegible both closed AND in the open native dropdown. This XBlock renders
+    // in the Learning MFE's CROSS-ORIGIN unit iframe, which the MFE-side dark
+    // injectors (P1/P2/P3 in plugin.py) cannot reach; the iframe instead gets
+    // `body.indigo-dark-theme` from this theme's dark-theme.js, so the fix must
+    // live here in the LMS theme. Darken the refine + load-more bars to the dark
+    // surface, force bar text light, and give the selects an explicit dark
+    // background + `color-scheme: dark` (so the native option dropdown also
+    // renders dark) with explicit `option` colours as a cross-browser fallback.
+    // `.indigo-dark-theme .forum-nav-*` (0,2,0) beats both the platform bar rule
+    // (0,1,0) and the generic `.indigo-dark-theme select` (0,1,1), so no
+    // !important is needed. $primary-light-d (#292A2C) matches the dark surface
+    // used by the Discussions-MFE filter bar for cross-surface consistency.
+    .forum-nav-refine-bar,
+    .forum-nav-load-more {
+        background-color: $primary-light-d;
+    }
+    .forum-nav-refine-bar,
+    .forum-nav-refine-bar * {
+        color: $text-color-d;
+    }
+    .forum-nav-filter-main-control,
+    .forum-nav-filter-cohort-control,
+    .forum-nav-sort-control {
+        background-color: $primary-light-d;
+        color: $text-color-d;
+        color-scheme: dark;
+
+        option {
+            background-color: $primary-light-d;
+            color: $text-color-d;
+        }
+    }
     .modal .inner-wrapper{
         background: $body-bg-d;
         color: $text-color-d;
