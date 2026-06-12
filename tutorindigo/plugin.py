@@ -157,6 +157,48 @@ RUN grep -qF '.container-xl {' node_modules/@edx/brand/paragon/_overrides.scss \
     )
 )
 
+# OST2 fix (DEFAULT layout): the same hero-heading clipping happens on the
+# no-banner-image default layout that ap.ost2.fyi actually renders, where the
+# heading is `.bg-primary-400 h1` / `.text-accent-a` (not `.banner__heading`),
+# so the block above never matches it. At >=1200px the page is side-by-side
+# (`.w-50` hero | `.content` white form panel) and the long one-word site name
+# slid UNDER the white panel; below 1200px `.layout` is flex-direction:column
+# (stacked) and the h1 max-width:564px made the word overflow there too. Fix:
+# (a) >=1200px shrink `.content` to hug the form (564px) and flex the hero to
+# fill the rest; (b) make the hero a CSS container and fluid-size the heading
+# to the hero's OWN width (cqi) with word-break:keep-all + max-width:100%, so
+# the long name is always on ONE line - never split, never overflowing - in
+# both side-by-side and stacked layouts (min() keeps the full 52/64px wide).
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-post-npm-install-authn",
+        """
+RUN grep -qF '.container-xl {' node_modules/@edx/brand/paragon/_overrides.scss \\
+ && printf '%s\\n' \\
+ '@media (min-width:1200px){#root .layout{display:flex!important;flex-wrap:nowrap!important}#root .layout>.w-50.d-flex{flex:1 1 auto!important;width:auto!important;max-width:none!important;min-width:0!important}#root .layout>.content{flex:0 0 564px!important;width:564px!important;max-width:564px!important;margin:0!important}}' \\
+ '#root .layout .bg-primary-400{container-type:inline-size!important}' \\
+ '#root .layout .bg-primary-400 h1{max-width:100%!important;width:100%!important;overflow-wrap:normal!important;word-break:keep-all!important;white-space:normal!important;font-size:min(52px,5.3cqi)!important;line-height:1.15!important}' \\
+ '#root .layout .bg-primary-400 h1 .text-accent-a{overflow-wrap:normal!important;word-break:keep-all!important;font-size:min(64px,6.5cqi)!important;line-height:1.1!important}' \\
+ >> node_modules/@edx/brand/paragon/_overrides.scss
+""",
+    )
+)
+
+# OST2: reword the authn hero lead-in "Start learning" -> "Level up your
+# skills" (keeps "with {siteName}"). Source string in default-layout/
+# messages.js, so it runs at the pre-npm-build anchor (src/ is COPY'd in just
+# before this; post-npm-install is too early). Guarded so the build fails
+# loudly if the string moves.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-pre-npm-build-authn",
+        """
+RUN grep -qF "defaultMessage: 'Start learning'" src/base-container/components/default-layout/messages.js \\
+ && sed -i "s#defaultMessage: 'Start learning'#defaultMessage: 'Level up your skills'#" src/base-container/components/default-layout/messages.js
+""",
+    )
+)
+
 # OST2 dark-mode fix: the discussions posts-list filter bar ("All ... posts
 # sorted by ...") renders with a WHITE background on the topic route
 # (/discussions/<course>/topics/<id>) while it is correctly dark on /posts.
