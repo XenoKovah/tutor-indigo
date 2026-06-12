@@ -828,7 +828,10 @@ for mfe in indigo_styled_mfes:
             ),
         )
 
-# OST2: hide the in-course notifications bell from logged-out visitors. The
+# OST2: hide the in-course notifications bell. The legacy (live) NotificationTrigger.jsx
+# now hides it ENTIRELY (returns null unconditionally) - OST2 has no notifications
+# mechanism in use. The new-sidebar combined trigger below stays logged-out-only (it
+# also fronts discussions, which must remain). Original logged-out rationale: The
 # sidebar trigger renders for everyone, but its tray can never be valid
 # without a session - clicking it as an anonymous user (public courses)
 # throws inside the tray and the MFE error boundary replaces the page with
@@ -854,8 +857,7 @@ hooks.Filters.ENV_PATCHES.add_item(
 RUN F=src/courseware/course/sidebar/sidebars/notifications/NotificationTrigger.jsx; \\
  grep -qF "import { useIntl } from '@edx/frontend-platform/i18n';" "$F" \\
  && [ "$(grep -c '^  return ($' "$F")" = 1 ] \\
- && sed -i "s#^import { useIntl } from '@edx/frontend-platform/i18n';\\$#&\\nimport { getAuthenticatedUser } from '@edx/frontend-platform/auth';#" "$F" \\
- && sed -i "s#^  return (\\$#  if (!getAuthenticatedUser()) { return null; } // OST2: the bell can never be valid logged-out\\n  return (#" "$F"
+ && sed -i "s#^  return (\\$#  return null; // OST2: in-course notification bell hidden entirely (notifications mechanism unused; tray is invalid logged-out and empty logged-in)\\n  return (#" "$F"
 RUN F=src/courseware/course/new-sidebar/sidebars/discussions-notifications/DiscussionsNotificationsTrigger.tsx; \\
  grep -qF "import { useIntl } from '@edx/frontend-platform/i18n';" "$F" \\
  && grep -qF "if (!isDiscussionbarAvailable && !isNotificationbarAvailable) { return null; }" "$F" \\
