@@ -175,7 +175,7 @@ hooks.Filters.ENV_PATCHES.add_item(
         """
 RUN grep -qF '.container-xl {' node_modules/@edx/brand/paragon/_overrides.scss \\
  && printf '%s\\n' \\
- '@media (min-width:1200px){#root .layout{display:flex!important;flex-wrap:nowrap!important}#root .layout>.w-50.d-flex{flex:1 1 auto!important;width:auto!important;max-width:none!important;min-width:0!important}#root .layout>.content{flex:0 0 564px!important;width:564px!important;max-width:564px!important;margin:0!important}}' \\
+ '@media (min-width:1200px){ #root .layout{display:flex!important;flex-wrap:nowrap!important}#root .layout>.w-50.d-flex{flex:1 1 auto!important;width:auto!important;max-width:none!important;min-width:0!important}#root .layout>.content{flex:0 0 564px!important;width:564px!important;max-width:564px!important;margin:0!important}}' \\
  '#root .layout .bg-primary-400{container-type:inline-size!important}' \\
  '#root .layout .bg-primary-400 h1{max-width:100%!important;width:100%!important;overflow-wrap:normal!important;word-break:keep-all!important;white-space:normal!important;font-size:min(52px,5.3cqi)!important;line-height:1.15!important}' \\
  '#root .layout .bg-primary-400 h1 .text-accent-a{overflow-wrap:normal!important;word-break:keep-all!important;font-size:min(64px,6.5cqi)!important;line-height:1.1!important}' \\
