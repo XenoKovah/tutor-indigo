@@ -34,6 +34,13 @@ try:
     show_gamification = show_student_ui(request)
 except Exception:
     show_gamification = False
+## "Gamification Settings" link (admins only). Read GAMMA_SETTINGS_URL from MFE_CONFIG --
+## the same value the MFE header (frontend-rgg-widgets) uses -- so the legacy header item
+## matches it and stays host-portable (ap/beta/prod) rather than hardcoded.
+try:
+    gamma_settings_url = settings.MFE_CONFIG.get("GAMMA_SETTINGS_URL", "")
+except Exception:
+    gamma_settings_url = ""
 %>
 
 <!-- NEW IN INDIGO update user icon -->
@@ -46,6 +53,11 @@ except Exception:
         % if show_gamification:
             <div class="mobile-nav-item dropdown-item dropdown-nav-item"><a href="${reverse('gamma_dashboard:gamma-dashboard')}" role="menuitem">${_("Your Accomplishments")}</a></div>
             <div class="mobile-nav-item dropdown-item dropdown-nav-item"><a href="${reverse('gamma_dashboard:gamma-leaderboard')}" role="menuitem">${_("Leaderboard")}</a></div>
+            ## Gamification Settings: admins only -- mirrors the MFE header, which adds this
+            ## item only for `administrator` (== is_staff) users. Hidden for normal learners.
+            % if self.real_user.is_staff and gamma_settings_url:
+            <div class="mobile-nav-item dropdown-item dropdown-nav-item"><a href="${gamma_settings_url}" role="menuitem">${_("Gamification Settings")}</a></div>
+            % endif
             ## Divider between the RGG gamification items and the default account items,
             ## to match the divider the MFE header (frontend-rgg-widgets) renders here.
             <div class="dropdown-user-divider" role="separator"></div>
