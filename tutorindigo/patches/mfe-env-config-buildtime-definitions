@@ -45,6 +45,11 @@ const OST2Footer = () => {
 
   return (
     <div className="wrapper wrapper-footer">
+      {/* OST2: footer nav links are bare <a> stuck at the brand slate #374151 in BOTH
+          themes (~1.9:1 on the dark page, unreadable). Recolour theme-aware -- near-black
+          in light, near-white in dark -- on EVERY MFE (this footer renders on all of
+          them). Supersedes the earlier learning-only footer.tutor-container override. */}
+      <style dangerouslySetInnerHTML={{ __html: `.wrapper-footer .nav-colophon a{color:#1a1a1a !important;}body.indigo-dark-theme .wrapper-footer .nav-colophon a{color:#f8f8f8 !important;}.wrapper-footer .nav-colophon a:hover,.wrapper-footer .nav-colophon a:focus{text-decoration:underline;}` }} />
       <footer id="footer" className="tutor-container">
         <div className="footer-top">
           {footerNavLinks.length > 0 && (

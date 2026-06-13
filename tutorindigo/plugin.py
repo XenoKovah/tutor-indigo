@@ -489,25 +489,6 @@ RUN grep -qF '.discussion-posts {' node_modules/@edx/brand/themes/dark/_extras.s
     )
 )
 
-# OST2 dark-mode fix (audit 2026-06-12): the learning-MFE footer nav links
-# (footer.tutor-container a) keep their light-mode slate (#374151) in dark mode
-# -> ~1.88 contrast on the #0D0D0E page, nearly invisible. Recolour to the dark
-# accent (#AEC7F6). Appended to the same brand dark partial (body.indigo-dark-
-# theme scope) as the courseware-search block; guarded on the .discussion-posts
-# anchor. (Learning MFE only - other MFEs' footers would need the same append.)
-hooks.Filters.ENV_PATCHES.add_item(
-    (
-        "mfe-dockerfile-post-npm-install-learning",
-        """
-RUN grep -qF '.discussion-posts {' node_modules/@edx/brand/themes/dark/_extras.scss \\
- && printf '%s\\n' \\
- 'footer.tutor-container a, footer.tutor-container a:visited { color: #AEC7F6 !important; }' \\
- 'footer.tutor-container a:hover, footer.tutor-container a:focus { color: #C9D6FF !important; }' \\
- >> node_modules/@edx/brand/themes/dark/_extras.scss
-""",
-    )
-)
-
 # OST2 dark-mode fix (audit 2026-06-13): the Progress page grade bar (an SVG with
 # class "grade-bar") draws its "Your current grade" / "Passing grade" labels as
 # <text> with fill #000 -> black-on-black, invisible on the dark page. Lighten the
