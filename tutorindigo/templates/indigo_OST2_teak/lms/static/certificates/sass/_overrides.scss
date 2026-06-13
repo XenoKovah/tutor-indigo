@@ -40,6 +40,15 @@ body.indigo-dark-theme.certificate {
     background: #0d0d0e;
     color: #f8f8f8;
 
+    // .wrapper-view (the page content wrapper) is TALLER than <body>, so its
+    // overflow -- the "About" aside + the footer -- paints on the cert bundle's
+    // WHITE <html> backdrop (_base.scss sets html,body{background:#fff}); darkening
+    // <body> alone leaves that lower area light, washing out the about/footer text.
+    // Darken .wrapper-view too so the full content height is dark.
+    .wrapper-view {
+        background: #0d0d0e;
+    }
+
     .wrapper-header {
         background: #0d0d0e;
         border-bottom: 1px solid #777792;
@@ -107,6 +116,9 @@ body.indigo-dark-theme.certificate {
         }
 
         // re-whiten the screen dark-mode additions above for print
+        .wrapper-view {
+            background: #fff;
+        }
         .accomplishment-main {
             background: #fff;
         }
