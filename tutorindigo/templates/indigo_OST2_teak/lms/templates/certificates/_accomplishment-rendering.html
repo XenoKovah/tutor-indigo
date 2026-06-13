@@ -110,7 +110,15 @@ except Exception:
                             % if recipient_profile_image_url:
                             <img class="src" src="${recipient_profile_image_url}" alt="Recipient Image">
                             % else:
-                            <img class="src" src="/static/certificates/images/demo-user-profile.png" alt="Recipient Image">
+                            <svg class="src" viewBox="0 0 120 120" role="img" xmlns="http://www.w3.org/2000/svg">
+                                <title>Set a profile photo</title>
+                                <circle cx="60" cy="60" r="60" fill="#64748b"/>
+                                <text text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="500" fill="#ffffff" font-size="17">
+                                    <tspan x="60" y="45">Set a</tspan>
+                                    <tspan x="60" y="66">Profile</tspan>
+                                    <tspan x="60" y="87">Photo</tspan>
+                                </text>
+                            </svg>
                             % endif
                         </span>
                         <div class="recipient-details">
