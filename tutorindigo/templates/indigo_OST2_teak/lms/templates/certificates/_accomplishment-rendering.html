@@ -3,6 +3,22 @@
 <%namespace name='static' file='../static_content.html'/>
 <%
 course_mode_class = course_mode if course_mode else ''
+
+# OST2: show the cert owner's real profile picture when they've uploaded one,
+# instead of the static demo placeholder. accomplishment_user_id is set by the cert
+# webview (_update_context_with_user_info -> context['accomplishment_user_id']);
+# resolved here in the theme override to avoid an edx-platform fork. Left None when
+# there is no uploaded image, so the template falls back to the default placeholder.
+recipient_profile_image_url = None
+try:
+    from openedx.core.djangoapps.user_api.accounts.image_helpers import get_profile_image_urls_for_user
+    from django.contrib.auth.models import User as _OST2CertUser
+    _ost2_cert_owner = _OST2CertUser.objects.get(id=accomplishment_user_id)
+    if _ost2_cert_owner.profile.has_profile_image:
+        _ost2_img_urls = get_profile_image_urls_for_user(_ost2_cert_owner)
+        recipient_profile_image_url = _ost2_img_urls.get('large') or _ost2_img_urls.get('full')
+except Exception:
+    recipient_profile_image_url = None
 %>
 
 <main class="accomplishment accomplishment-main">
@@ -91,7 +107,11 @@ course_mode_class = course_mode if course_mode else ''
                     <dt class="label sr-only">${_("Awarded to:")}</dt>
                     <dd class="value copy copy-meta">
                         <span class="recipient-img">
+                            % if recipient_profile_image_url:
+                            <img class="src" src="${recipient_profile_image_url}" alt="Recipient Image">
+                            % else:
                             <img class="src" src="/static/certificates/images/demo-user-profile.png" alt="Recipient Image">
+                            % endif
                         </span>
                         <div class="recipient-details">
                             <h3 class="recipient-name">${accomplishment_copy_name}</h3>
