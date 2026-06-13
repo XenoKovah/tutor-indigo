@@ -1,5 +1,28 @@
 
 
+// OST2 (2026-06-13): re-position popovers after late layout shifts. The Progress
+// page grade bar uses Paragon popovers (Popper.js) for the current-grade / passing-
+// grade markers; they position on mount, but the staff "View this course as" toolbar
+// renders AFTER and pushes the bar down ~90px without re-positioning them, leaving
+// the markers floating off the line (staff-only -- learners never see that toolbar).
+// A debounced ResizeObserver on <html> dispatches a synthetic resize whenever the
+// page height changes, which makes Popper re-run positioning so the markers settle
+// on the line. Runs once at MFE startup; a no-op on pages with no popovers.
+(function () {
+  if (typeof window === 'undefined' || window.__ost2RepositionNudge) { return; }
+  window.__ost2RepositionNudge = true;
+  try {
+    let nudgeTimer;
+    const fire = () => {
+      clearTimeout(nudgeTimer);
+      nudgeTimer = setTimeout(() => {
+        try { window.dispatchEvent(new Event('resize')); } catch (e) { /* noop */ }
+      }, 150);
+    };
+    new ResizeObserver(fire).observe(document.documentElement);
+  } catch (e) { /* ResizeObserver unsupported -> skip */ }
+})();
+
 // Links-only replacement for @edly-io/indigo-frontend-component-footer: same
 // wrapper/nav markup and classes (so the brand package's light/dark footer CSS
 // still applies), but without the "Powered by" Tutor/Open edX logos and the
