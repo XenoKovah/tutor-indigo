@@ -59,6 +59,32 @@ body.indigo-dark-theme.certificate {
     .wrapper-footer a {
         color: #aec7f6;
     }
+
+    // OST2 (2026-06-13): the page surface is darkened above, but the framed
+    // accomplishment area was intentionally left light -- which leaves the
+    // recipient/course/instructor text (inheriting the dark body's #f8f8f8) WHITE
+    // on the white cert card, the #f5f5f5 metadata area light, and its #111
+    // metadata values dark. Per Veronica (light card on a dark page): darken the
+    // surrounding accomplishment area + lighten the metadata values, and keep the
+    // cert "paper" card itself light (its OST2 logo / circuit-art / ink signatures
+    // are black, meant for a light bg) while forcing the recipient/course/
+    // instructor text dark so it is legible. No !important (same as above) so the
+    // @media print re-whiten below wins.
+    .accomplishment-main {
+        background: #0d0d0e;
+    }
+    .accomplishment-rendering,
+    .accomplishment-rendering .accomplishment-recipient-name,
+    .accomplishment-rendering .accomplishment-course-name,
+    .accomplishment-rendering .instructor-name,
+    .accomplishment-rendering .instructor-title {
+        color: #1c1c1c;
+    }
+    .wrapper-accomplishment-metadata .recipient-name,
+    .wrapper-accomplishment-metadata .recipient-username,
+    .wrapper-accomplishment-metadata dd {
+        color: #f8f8f8;
+    }
 }
 
 @media print {
@@ -77,6 +103,21 @@ body.indigo-dark-theme.certificate {
         aside.about p,
         .wrapper-footer,
         .wrapper-footer .copy {
+            color: #000;
+        }
+
+        // re-whiten the screen dark-mode additions above for print
+        .accomplishment-main {
+            background: #fff;
+        }
+        .accomplishment-rendering,
+        .accomplishment-rendering .accomplishment-recipient-name,
+        .accomplishment-rendering .accomplishment-course-name,
+        .accomplishment-rendering .instructor-name,
+        .accomplishment-rendering .instructor-title,
+        .wrapper-accomplishment-metadata .recipient-name,
+        .wrapper-accomplishment-metadata .recipient-username,
+        .wrapper-accomplishment-metadata dd {
             color: #000;
         }
     }
