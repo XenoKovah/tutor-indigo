@@ -26,6 +26,16 @@ course_mode_class = course_mode if course_mode else ''
 
 <body class="layout-accomplishment view-valid-accomplishment ${dir_rtl} certificate certificate-${course_mode_class}" data-view="valid-accomplishment">
 
+    <%doc>
+    OST2: apply dark mode for EVERY certificate viewer, synchronously, before paint.
+    The cert's normal dark-theme JS only loads for the certificate OWNER (it lives
+    inside valid.html's `user.id == accomplishment_user_id` block), so staff / public /
+    any non-owner viewer saw a LIGHT cert even with the indigo-toggle-dark=dark cookie
+    set. This inline cookie read adds the class unconditionally for all viewers (and as
+    a bonus removes the flash-of-light the deferred bundle caused for the owner too).
+    </%doc>
+    <script>(function(){try{if(document.cookie.indexOf('indigo-toggle-dark=dark')!==-1){document.body.classList.add('indigo-dark-theme');}}catch(e){}})();</script>
+
     <div class="wrapper-view" dir="${dir_rtl}">
 
         <%include file="_accomplishment-header.html" />

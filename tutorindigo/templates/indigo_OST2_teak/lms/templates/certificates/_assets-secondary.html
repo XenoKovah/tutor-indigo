@@ -1,6 +1,10 @@
 <script type="text/javascript">
 
-    document.getElementById("action-print-view").addEventListener("click", printView);
+    // OST2: guard for non-owner cert views (staff / public) where the Print button
+    // (#action-print-view, owner-only via valid.html) is absent -- this was throwing
+    // "Cannot read properties of null" and aborting this script for non-owners.
+    var __printBtn = document.getElementById("action-print-view");
+    if (__printBtn) { __printBtn.addEventListener("click", printView); }
 
     function printView(event) {
        event.preventDefault();
