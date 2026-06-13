@@ -57,6 +57,24 @@ hooks.Filters.ENV_PATTERNS_INCLUDE.add_items(
     ]
 )
 
+# OST2: redirect the platform "About" marketing link to the external ost2.fyi
+# About page (matching the MFE footer "About" in FOOTER_NAV_LINKS above). The
+# legacy LMS footer/nav About AND the certificate page's "Learn more about
+# OpenSecurityTraining2" link both resolve via marketing_link('ABOUT')
+# (certificate page: branding_api.get_about_url() -> get_url('ABOUT') ->
+# marketing_link, returned verbatim with no re-absolutization). MKTG_URL_OVERRIDES
+# is checked FIRST in marketing_link() (top priority, no ENABLE_MKTG_SITE needed),
+# so this single override redirects EVERY marketing_link('ABOUT') -- there are no
+# hardcoded /about links -- to https://ost2.fyi/About.html. LMS-only (the About
+# link is never rendered in Studio). globals().get keeps any pre-existing overrides
+# and is NameError-safe if MKTG_URL_OVERRIDES is somehow undefined upstream.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "openedx-lms-common-settings",
+        'MKTG_URL_OVERRIDES = {**globals().get("MKTG_URL_OVERRIDES", {}), "ABOUT": "https://ost2.fyi/About.html"}',
+    )
+)
+
 
 # init script: set theme automatically
 with open(
