@@ -42,6 +42,7 @@
 // because OST2's footer links are absolute (https://ost2.fyi/...).
 const OST2Footer = () => {
   const footerNavLinks = getConfig().INDIGO_FOOTER_NAV_LINKS || [];
+  const footerLinkCss = { __html: `.wrapper-footer .nav-colophon a{color:#1a1a1a !important;}body.indigo-dark-theme .wrapper-footer .nav-colophon a{color:#f8f8f8 !important;}.wrapper-footer .nav-colophon a:hover,.wrapper-footer .nav-colophon a:focus{text-decoration:underline;}` };
 
   return (
     <div className="wrapper wrapper-footer">
@@ -49,7 +50,7 @@ const OST2Footer = () => {
           themes (~1.9:1 on the dark page, unreadable). Recolour theme-aware -- near-black
           in light, near-white in dark -- on EVERY MFE (this footer renders on all of
           them). Supersedes the earlier learning-only footer.tutor-container override. */}
-      <style dangerouslySetInnerHTML={{ __html: `.wrapper-footer .nav-colophon a{color:#1a1a1a !important;}body.indigo-dark-theme .wrapper-footer .nav-colophon a{color:#f8f8f8 !important;}.wrapper-footer .nav-colophon a:hover,.wrapper-footer .nav-colophon a:focus{text-decoration:underline;}` }} />
+      <style dangerouslySetInnerHTML={footerLinkCss} />
       <footer id="footer" className="tutor-container">
         <div className="footer-top">
           {footerNavLinks.length > 0 && (
