@@ -3,6 +3,37 @@
     background: $primary !important;
     color: white !important;
 }
+// OST2 dark-mode fix (2026-06-13): certificate page (body.layout-accomplishment,
+// /certificates/<uuid>). <body> bg is dark, but the <html> backdrop is white and
+// <body>'s bg does NOT cover the full content height -- .wrapper-view (the cert
+// page wrapper) OVERFLOWS the short <body> box, so the about/footer area paints on
+// HTML's white and its near-white text washes out. Additionally the main area
+// (.accomplishment-main) and the cert "paper" card (.accomplishment-rendering) are
+// opaque light islands. Per Veronica: keep the cert card a LIGHT paper (its OST2
+// logo / circuit-tree art / ink signatures are black images meant for a light bg)
+// with dark text, and darken everything else. The metadata strip has MIXED text
+// (light labels + dark #111 values), so its dark values (recipient name/username,
+// cert-ID, date) are lightened too or they'd be dark-on-dark. Scoped to
+// .layout-accomplishment so the generic .wrapper-view darken stays cert-page-only.
+// Verified live against the real cert before deploy (white-on-white -> readable).
+body.indigo-dark-theme.layout-accomplishment {
+    .wrapper-view,
+    .accomplishment-main {
+        background-color: $body-bg-d !important;
+    }
+    .accomplishment-rendering,
+    .accomplishment-rendering .accomplishment-recipient-name,
+    .accomplishment-rendering .accomplishment-course-name,
+    .accomplishment-rendering .instructor-name,
+    .accomplishment-rendering .instructor-title {
+        color: #1c1c1c !important;
+    }
+    .wrapper-accomplishment-metadata .recipient-name,
+    .wrapper-accomplishment-metadata .recipient-username,
+    .wrapper-accomplishment-metadata dd {
+        color: $text-color-d !important;
+    }
+}
 .indigo-dark-theme { 
     select {
         background: transparent;
