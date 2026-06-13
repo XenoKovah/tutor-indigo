@@ -5,22 +5,34 @@
 // grade markers; they position on mount, but the staff "View this course as" toolbar
 // renders AFTER and pushes the bar down ~90px without re-positioning them, leaving
 // the markers floating off the line (staff-only -- learners never see that toolbar).
-// A debounced ResizeObserver on <html> dispatches a synthetic resize whenever the
-// page height changes, which makes Popper re-run positioning so the markers settle
-// on the line. Runs once at MFE startup; a no-op on pages with no popovers.
+// A synthetic window 'resize' makes Popper re-run positioning. NOTE: a ResizeObserver
+// on <html> does NOT work here -- the MFE renders in a fixed-height app shell, so
+// documentElement's box stays constant (clientHeight pinned ~873, only scrollHeight
+// grows); the observer fires once at startup (before the markers mount) and never on
+// the toolbar shift. Instead fire a short burst of timed resizes after each full load
+// AND after each SPA route change (history pushState/replaceState/popstate), so at
+// least one always lands after the toolbar settles. No-op on pages without popovers.
 (function () {
   if (typeof window === 'undefined' || window.__ost2RepositionNudge) { return; }
   window.__ost2RepositionNudge = true;
+  var DELAYS = [400, 1000, 1800, 3000, 5000];
+  var pending = [];
+  var fireResize = function () {
+    try { window.dispatchEvent(new Event('resize')); } catch (e) { /* noop */ }
+  };
+  var burst = function () {
+    pending.forEach(clearTimeout); pending = [];
+    for (var i = 0; i < DELAYS.length; i++) { pending.push(setTimeout(fireResize, DELAYS[i])); }
+  };
+  burst(); // initial full-page load
   try {
-    let nudgeTimer;
-    const fire = () => {
-      clearTimeout(nudgeTimer);
-      nudgeTimer = setTimeout(() => {
-        try { window.dispatchEvent(new Event('resize')); } catch (e) { /* noop */ }
-      }, 150);
+    var wrap = function (orig) {
+      return function () { var r = orig.apply(this, arguments); burst(); return r; };
     };
-    new ResizeObserver(fire).observe(document.documentElement);
-  } catch (e) { /* ResizeObserver unsupported -> skip */ }
+    history.pushState = wrap(history.pushState);
+    history.replaceState = wrap(history.replaceState);
+    window.addEventListener('popstate', burst);
+  } catch (e) { /* history patch failed; the initial burst still ran */ }
 })();
 
 // Links-only replacement for @edly-io/indigo-frontend-component-footer: same
