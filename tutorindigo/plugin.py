@@ -508,6 +508,23 @@ RUN grep -qF '.discussion-posts {' node_modules/@edx/brand/themes/dark/_extras.s
     )
 )
 
+# OST2 dark-mode fix (audit 2026-06-13): the Progress page grade bar (an SVG with
+# class "grade-bar") draws its "Your current grade" / "Passing grade" labels as
+# <text> with fill #000 -> black-on-black, invisible on the dark page. Lighten the
+# SVG text fill (the % marker bubbles are Paragon popovers, already light). Appended
+# to the same brand dark partial; guarded on .discussion-posts.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-post-npm-install-learning",
+        """
+RUN grep -qF '.discussion-posts {' node_modules/@edx/brand/themes/dark/_extras.scss \\
+ && printf '%s\\n' \\
+ '.grade-bar text { fill: #F8F8F8 !important; }' \\
+ >> node_modules/@edx/brand/themes/dark/_extras.scss
+""",
+    )
+)
+
 # OST2: hide the course-outline completion indicator circles. The outline
 # section/sequence titles (SectionTitle.tsx / SequenceTitle.tsx) render a
 # Paragon <Icon> completion marker - CheckCircleOutline (the grey "o",
