@@ -42,15 +42,20 @@
 // because OST2's footer links are absolute (https://ost2.fyi/...).
 const OST2Footer = () => {
   const footerNavLinks = getConfig().INDIGO_FOOTER_NAV_LINKS || [];
-  const footerLinkCss = { __html: `.wrapper-footer .nav-colophon a{color:#1a1a1a !important;}body.indigo-dark-theme .wrapper-footer .nav-colophon a{color:#f8f8f8 !important;}.wrapper-footer .nav-colophon a:hover,.wrapper-footer .nav-colophon a:focus{text-decoration:underline;}` };
+  const ost2MfeCss = { __html: `.wrapper-footer .nav-colophon a{color:#1a1a1a !important;}body.indigo-dark-theme .wrapper-footer .nav-colophon a{color:#f8f8f8 !important;}.wrapper-footer .nav-colophon a:hover,.wrapper-footer .nav-colophon a:focus{text-decoration:underline;}body.indigo-dark-theme .pgn__stateful-btn{color:#0d0d0e !important;}body.indigo-dark-theme .pgn__form-switch-helper-text{color:#b0b0b0 !important;}` };
 
   return (
     <div className="wrapper wrapper-footer">
-      {/* OST2: footer nav links are bare <a> stuck at the brand slate #374151 in BOTH
-          themes (~1.9:1 on the dark page, unreadable). Recolour theme-aware -- near-black
-          in light, near-white in dark -- on EVERY MFE (this footer renders on all of
-          them). Supersedes the earlier learning-only footer.tutor-container override. */}
-      <style dangerouslySetInnerHTML={footerLinkCss} />
+      {/* OST2: this <style> renders on EVERY MFE (the footer is global), so it carries a
+          few app-wide dark-mode contrast fixes that the brand theme missed:
+          - footer nav links: bare <a> stuck at brand slate #374151 (~1.9:1 on dark) ->
+            near-black in light, near-white in dark.
+          - .pgn__stateful-btn (e.g. the staff "View as" Submit on the learner dashboard):
+            white text stayed on the light-accent (#aec7f6) dark-mode button bg (1.7:1) ->
+            near-black, matching how the brand already darkens btn-primary text in dark.
+          - .pgn__form-switch-helper-text: #707070 helper stuck in both themes (3.9:1 on
+            dark) -> lighter grey in dark. */}
+      <style dangerouslySetInnerHTML={ost2MfeCss} />
       <footer id="footer" className="tutor-container">
         <div className="footer-top">
           {footerNavLinks.length > 0 && (

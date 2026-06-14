@@ -90,7 +90,10 @@ header.global-header {
             .toggle-user-dropdown {
                 padding: 9px 15px;
                 background: $primary-light;
-                color: $primary;
+                // OST2: was $primary (#3b85ff) on $primary-light -> 3.2:1 in light mode.
+                // Darker navy matches the dropdown chevron (#15376D) and lifts contrast;
+                // the indigo-dark-theme block below overrides this for dark mode.
+                color: #15376d;
                 font-size: 14px;
                 font-weight: 500;
                 line-height: 20px;
