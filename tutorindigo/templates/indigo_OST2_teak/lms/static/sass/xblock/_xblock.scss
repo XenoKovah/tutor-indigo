@@ -101,10 +101,26 @@
     .xmodule_display.xmodule_StaticTabBlock ul {
         color: $text-color-d;
     }
+    // OST2 dark-mode fix (reported 2026-06-15): in course HTML the command
+    // listings are `<pre><code>...</code></pre>` (e.g. the "cat README.md" block
+    // in Arch1901). The <pre> was already recoloured above, but the <code> child -
+    // which carries the visible text - was NOT, so it kept the platform's
+    // `code { color: var(--body-color, #313131) }` (HtmlBlockDisplay.css) = dark
+    // grey, ~1.5:1 on the dark surface (inline <code> in prose was dim for the same
+    // reason). The unit renders in the Learning MFE's cross-origin iframe, which is
+    // dark via `body.indigo-dark-theme` (the LMS dark-theme.js reads the cookie),
+    // so the fix belongs here on the class-present path. Add `code` beside the
+    // existing `pre` selectors at the same `.xmodule_*Block` (0,2,1) specificity, so
+    // the theme rule still outranks the platform's `.xmodule_HtmlBlock pre/code`
+    // cleanly under `.indigo-dark-theme` (-> 0,3,1).
     .xmodule_display.xmodule_AboutBlock pre,
+    .xmodule_display.xmodule_AboutBlock code,
     .xmodule_display.xmodule_CourseInfoBlock pre,
+    .xmodule_display.xmodule_CourseInfoBlock code,
     .xmodule_display.xmodule_HtmlBlock pre,
-    .xmodule_display.xmodule_StaticTabBlock pre {
+    .xmodule_display.xmodule_HtmlBlock code,
+    .xmodule_display.xmodule_StaticTabBlock pre,
+    .xmodule_display.xmodule_StaticTabBlock code {
         color: $text-color-d;
     }
     // OST2: course-authored headings inside HTML/About/CourseInfo/StaticTab
@@ -157,6 +173,30 @@
     .xmodule_display.xmodule_VideoBlock a.transcript-start,
     .xmodule_display.xmodule_VideoBlock a.transcript-end {
         color: $primary-d;
+    }
+    // OST2 dark-mode fix (reported 2026-06-15): on Teak the transcript CUES are
+    // `<span role="link">` inside `.subtitles .subtitles-menu li` - NOT the `<a>`
+    // the rule above targets - so they were never recoloured in dark mode. They
+    // inherited the platform cue colours straight from the <li>:
+    //   inactive  `.subtitles-menu li`          -> #0074B5 (dim blue, ~2.85:1)
+    //   active    `.subtitles-menu li.current`  -> #333    (near-black, illegible)
+    // on the dark transcript panel. The platform's OWN fullscreen skin already
+    // paints them correctly (`.video-fullscreen .subtitles li` #AAAAAA grey,
+    // `li.current` #fff white) - which is why fullscreen looked fine and the
+    // non-fullscreen sidebar did not. Mirror those exact fullscreen colours onto
+    // the non-fullscreen cues so both modes match (the request). These selectors
+    // carry the platform's full `.subtitles-menu li` path; the enclosing
+    // `.indigo-dark-theme` adds one class, so each outranks its platform
+    // counterpart (inactive 0,6,1 > 0,5,1; current 0,7,1 > 0,6,1) with no
+    // !important. Colour is set on the <li>, which the span[role="link"] inherits,
+    // exactly as the platform does. Bold on `.current` is untouched (already set
+    // by the platform). In fullscreen these win too but apply the identical
+    // colours, so the fullscreen look is unchanged.
+    .xmodule_display.xmodule_VideoBlock .video .subtitles .subtitles-menu li {
+        color: #AAAAAA;
+    }
+    .xmodule_display.xmodule_VideoBlock .video .subtitles .subtitles-menu li.current {
+        color: #FFFFFF;
     }
     .hd-1, .hd-2, .hd-3, .hd-4, .hd-5, .hd-6, .hd-7, .hd-8 {
         color: $text-color-d;
