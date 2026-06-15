@@ -1,5 +1,6 @@
 <%page expression_filter="h"/>
 <%! from django.utils.translation import gettext as _ %>
+<%! from django.conf import settings %>
 <%namespace name='static' file='../static_content.html'/>
 <%
 course_mode_class = course_mode if course_mode else ''
@@ -19,6 +20,17 @@ try:
         recipient_profile_image_url = _ost2_img_urls.get('large') or _ost2_img_urls.get('full')
 except Exception:
     recipient_profile_image_url = None
+
+# OST2: learner profile URL for the recipient links (picture / name / username).
+# Built from the Learner Profile MFE base (PROFILE_MICROFRONTEND_URL, e.g.
+# https://apps.<host>/profile/u/). Left None when unavailable so the recipient
+# block renders as plain, unlinked text exactly as before.
+profile_url = None
+try:
+    if accomplishment_copy_username and getattr(settings, 'PROFILE_MICROFRONTEND_URL', None):
+        profile_url = settings.PROFILE_MICROFRONTEND_URL + accomplishment_copy_username
+except Exception:
+    profile_url = None
 %>
 
 <main class="accomplishment accomplishment-main">
@@ -107,6 +119,9 @@ except Exception:
                     <dt class="label sr-only">${_("Awarded to:")}</dt>
                     <dd class="value copy copy-meta">
                         <span class="recipient-img">
+                            % if profile_url:
+                            <a href="${profile_url}" style="text-decoration:none;">
+                            % endif
                             % if recipient_profile_image_url:
                             <img class="src" src="${recipient_profile_image_url}" alt="Recipient Image">
                             % else:
@@ -120,10 +135,25 @@ except Exception:
                                 </text>
                             </svg>
                             % endif
+                            % if profile_url:
+                            </a>
+                            % endif
                         </span>
                         <div class="recipient-details">
-                            <h3 class="recipient-name">${accomplishment_copy_name}</h3>
-                            <p class="recipient-username">${accomplishment_copy_username} @ ${platform_name}</p>
+                            <h3 class="recipient-name">
+                                % if profile_url:
+                                <a href="${profile_url}" style="color:inherit;text-decoration:none;">${accomplishment_copy_name}</a>
+                                % else:
+                                ${accomplishment_copy_name}
+                                % endif
+                            </h3>
+                            <p class="recipient-username">
+                                % if profile_url:
+                                <a href="${profile_url}" style="color:inherit;text-decoration:none;">${accomplishment_copy_username} @ ${platform_name}</a>
+                                % else:
+                                ${accomplishment_copy_username} @ ${platform_name}
+                                % endif
+                            </p>
                         </div>
                     </dd>
                 </dl>
