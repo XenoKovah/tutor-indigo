@@ -46,6 +46,57 @@
             color: $text-color-d;
         }
     }
+    // OST2 dark-mode fix (2026-06-17): the rest of the inline-discussion XBlock
+    // keeps Paragon's light defaults in dark mode -- the "Add a Post" form is
+    // white-on-near-white (~1:1, illegible), the thread-nav list / post /
+    // response / comment cards are white, the thread titles + preview bodies are
+    // platform-dark text, and the show/hide toggle is a white button. The refine
+    // bar above was the only forum surface previously darkened. Same
+    // cross-origin-iframe rationale as that fix (the MFE dark injectors can't
+    // reach this XBlock; it gets `body.indigo-dark-theme` from the LMS
+    // dark-theme.js and must be styled here). Darken the surfaces to
+    // $primary-light-d (matching the refine bar), drop inputs to $body-bg-d, and
+    // force the platform-dark thread/preview text to $text-color-d. !important
+    // because several platform rules (e.g. `.discussion-module .btn`,
+    // `.discussion-show.shown`) paint these light with selectors that tie the
+    // nested `.indigo-dark-theme` prefix.
+    .discussion-module {
+        .forum-new-post-form,
+        .forum-nav,
+        .forum-nav-thread,
+        .forum-nav-thread-list,
+        .discussion-article,
+        .discussion-response,
+        .discussion-comment,
+        .wmd-panel,
+        .wmd-preview {
+            background-color: $primary-light-d !important;
+        }
+        .forum-nav-thread-title,
+        .thread-preview-body,
+        .thread-title,
+        .field-label-text,
+        .field-help,
+        .post-body,
+        .response-body,
+        .posted-details,
+        label {
+            color: $text-color-d !important;
+        }
+        input,
+        textarea,
+        select,
+        .wmd-input {
+            background-color: $body-bg-d !important;
+            color: $text-color-d !important;
+            border-color: $primary-light-d !important;
+        }
+        .discussion-show.btn {
+            background-color: $primary-light-d !important;
+            color: $text-color-d !important;
+            border-color: $primary-light-d !important;
+        }
+    }
     .modal .inner-wrapper{
         background: $body-bg-d;
         color: $text-color-d;

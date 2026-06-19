@@ -176,7 +176,7 @@ RUN grep -qF '.container-xl {' node_modules/@edx/brand/paragon/_overrides.scss \
 )
 
 # OST2 fix (DEFAULT layout): the same hero-heading clipping happens on the
-# no-banner-image default layout that ap.ost2.fyi actually renders, where the
+# no-banner-image default layout that dev.ost2.fyi actually renders, where the
 # heading is `.bg-primary-400 h1` / `.text-accent-a` (not `.banner__heading`),
 # so the block above never matches it. At >=1200px the page is side-by-side
 # (`.w-50` hero | `.content` white form panel) and the long one-word site name
@@ -274,6 +274,29 @@ RUN grep -qF '.discussion-posts {' node_modules/@edx/brand/themes/dark/_extras.s
  '.breadcrumb-menu { background-color: $primary-light !important; }' \\
  '.breadcrumb-menu .btn-outline-primary { color: $text-color-primary !important; }' \\
  >> node_modules/@edx/brand/themes/dark/_extras.scss
+""",
+    )
+)
+
+# OST2 dark-mode fix (2026-06-17): the standalone Discussions-MFE post-DETAIL
+# pane card (.discussion-comments + its response/comment .card list) renders
+# white in dark mode on the CATEGORY/topic route. The brand dark partial only
+# darkens that card via the `#root .header-action-bar + .d-flex...` adjacency,
+# and on a category route the breadcrumb is inserted between the action bar and
+# the content pane, so the `+` no longer matches and the cards fall back to
+# Paragon's light `.card{background:#fff}` (near-white-on-near-white, ~1:1). The
+# plain post route keeps the adjacency intact so it stays dark -- which is why
+# this only shows on the category/topic route, and on every box equally. Rather
+# than chase the fragile adjacency, darken EVERY card under #main to the dark
+# surface so the detail pane is covered on all routes (the post-LIST cards are
+# `.discussion-post` anchors, not `.card`, so they're untouched). Guarded on
+# `.discussion-posts {` like the rules above.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-post-npm-install-discussions",
+        """
+RUN grep -qF '.discussion-posts {' node_modules/@edx/brand/themes/dark/_extras.scss \\
+ && printf '\\n#main .card { background-color: $primary-light !important; }\\n' >> node_modules/@edx/brand/themes/dark/_extras.scss
 """,
     )
 )
