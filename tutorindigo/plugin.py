@@ -29,6 +29,10 @@ config: t.Dict[str, t.Dict[str, t.Any]] = {
         # tutor config save --set INDIGO_FOOTER_NAV_LINKS=[]
         "FOOTER_NAV_LINKS": [
             {"title": "About", "url": "https://ost2.fyi/About.html"},
+            # Per-box ToS: the MFE footer is served from apps.<LMS_HOST>, so a bare
+            # relative "/tos" would resolve against the MFE host and 404. Build the
+            # absolute LMS URL instead, so every box links to its own ToS page.
+            {"title": "ToS", "url": "{{ 'https' if ENABLE_HTTPS else 'http' }}://{{ LMS_HOST }}/tos"},
             {"title": "Learning Paths", "url": "https://ost2.fyi/Learning-Paths.html"},
             {"title": "How to Help", "url": "https://ost2.fyi/How-to-Help.html"},
         ],
