@@ -97,6 +97,165 @@
             border-color: $primary-light-d !important;
         }
     }
+    // OST2 dark-mode fix (reported 2026-08-01): the remaining inline-discussion
+    // XBlock forum surfaces that still carried Paragon's LIGHT-mode values in dark
+    // mode -- the 2026-06-17 block above only darkened the top-level surfaces + a
+    // few text nodes. Four reported symptoms plus the adjacent leftovers found while
+    // fixing them. Same cross-origin-iframe rationale as the blocks above: the MFE
+    // dark injectors can't reach this XBlock, so it is styled here on the
+    // class-present path (`body.indigo-dark-theme` from the LMS dark-theme.js). All
+    // rules are scoped under `.discussion-module` (the inline XBlock root) and win on
+    // specificity over the platform rules they override, so no !important is needed
+    // except where a platform rule is itself more specific (noted inline).
+    .discussion-module {
+        // (1) Thread-list rows: the platform paints `:hover` / `.is-active` with
+        // $forum-color-background-light (#F5F5F5, near-white). Because the block
+        // above forces the thread title + preview text light, hovering or selecting
+        // a row turned it light-on-light (illegible -- the reported bug). Repaint the
+        // hover/active state to a subtle lighter-than-surface highlight
+        // ($light-overlay-d) so the light text stays readable.
+        .forum-nav-thread .forum-nav-thread-link:hover,
+        .forum-nav-thread .forum-nav-thread-link:active,
+        .forum-nav-thread .forum-nav-thread-link:focus,
+        .forum-nav-thread .forum-nav-thread-link.is-active {
+            background-color: $light-overlay-d;
+        }
+        // The per-thread vote/comment counts: the platform paints the little count
+        // chip theme-color("light") (#E7E7E7) with #000 digits -> a glaring white
+        // chip with black text on the dark list. Darken the chip + lighten its text,
+        // and recolour the speech-bubble tail (a right-border triangle) to match.
+        .forum-nav-thread-comments-count,
+        .forum-nav-thread-votes-count {
+            color: $text-color-d;
+        }
+        .forum-nav-thread-comments-count {
+            background-color: $light-overlay-d;
+
+            &::after {
+                border-right-color: $light-overlay-d;
+            }
+        }
+
+        // (2) Post / response / comment action buttons (Vote / Follow / More, plus
+        // the More dropdown's Report / Pin / Close / Edit / Delete). In the resting
+        // state the platform paints the button text and the `.action-icon` glyph
+        // theme-color("secondary") (#313131), near-invisible on the dark surface --
+        // so the icons "don't show up" until moused over (the reported bug). Lighten
+        // the resting text + glyph and give the icon box a visible-but-subtle border.
+        // The platform's richer `:hover` / `.is-checked` rules (green vote, blue
+        // follow, dark more -> filled icon + white glyph) carry higher specificity
+        // and still win, so the hover affordances are unchanged.
+        .action-button,
+        .action-list-item {
+            color: $text-color-d;
+
+            .action-icon {
+                border-color: $border-color-d;
+                color: $text-color-d;
+            }
+        }
+        // The More / endorse / answer hover states set the *button* background to
+        // $forum-color-background (#fff) and (for More) the label to #000 -> a white
+        // box with black text flashing on the dark UI. Keep the hover transparent and
+        // the label light (the icon fill on hover is already dark/coloured -> fine).
+        .action-button.action-more:hover,
+        .action-button.action-more:focus,
+        .action-button.action-endorse:hover,
+        .action-button.action-endorse:focus,
+        .action-button.action-answer:hover,
+        .action-button.action-answer:focus {
+            background-color: transparent;
+        }
+        .action-button.action-more:hover .action-label,
+        .action-button.action-more:focus .action-label {
+            color: $text-color-d;
+        }
+        // The More dropdown popover: platform bg $forum-color-background (#fff),
+        // border $forum-color-border, items theme-color("secondary") -> a white card.
+        // Darken it, lighten the items, and recolour the CSS nub (::before/::after
+        // triangles) so the pointer matches the dark card.
+        .actions-dropdown .actions-dropdown-list {
+            background: $primary-light-d;
+            border-color: $border-color-d;
+
+            &::after {
+                border-bottom-color: $primary-light-d;
+            }
+
+            &::before {
+                border-bottom-color: $border-color-d;
+            }
+        }
+        .actions-dropdown .action-list-item {
+            color: $text-color-d;
+
+            &:hover,
+            &:focus {
+                color: $primary-d;
+            }
+        }
+
+        // (3) "This post is visible to everyone." (.group-visibility-label) has no
+        // rule of its own; it inherits `.post-context` #414141 (dark grey) ->
+        // unreadable on dark (the reported bug). Lighten it and the sibling
+        // post/response context + count helper text. `!important` because
+        // `.inline-comment-count` is set by a deeper platform selector (0,5,0); the
+        // muted $text-color-primary keeps these reading as secondary while legible.
+        .group-visibility-label,
+        .post-context,
+        .post-type-label,
+        .inline-comment-count,
+        .response-count,
+        .response-display-count {
+            color: $text-color-primary !important;
+        }
+
+        // (4) The WMD (markdown) editor toolbar icons are a single dark-glyph sprite
+        // (wmd-buttons-transparent.png) built for a light bar, so they are
+        // near-invisible on the dark toolbar (the reported bug). Invert luminance to
+        // make the glyphs light; the extra hue-rotate keeps the few colour icons
+        // (link / image / undo / redo) from rendering as their negative. The sprite
+        // is transparent, so only the glyph pixels are affected.
+        .wmd-button > span {
+            filter: invert(1) hue-rotate(180deg);
+        }
+        // The WMD preview: the 2026-06-17 block darkened `.wmd-preview`, but the
+        // outer `.wmd-preview-container` kept #F5F5F5 (white) + a #d9d9d9 border and
+        // the "Preview" `.wmd-preview-label` kept #414141 (dark) -> a white bar with
+        // a near-invisible label. Darken the container + lighten the label.
+        .wmd-preview-container {
+            background: $primary-light-d;
+            border-color: $border-color-d;
+        }
+        .wmd-preview-label {
+            color: $text-color-primary;
+        }
+
+        // Adjacent response/comment surfaces that kept light backgrounds: the
+        // comments container + the answered-question "N comments" bar
+        // (theme-color("lightest") / #F5F5F5), the comment blockquotes
+        // ($forum-color-background-light), and -- in the multi-thread inline list --
+        // the `.thread-wrapper` + `.post-tools` ($white). Darken them all + lighten
+        // the quote text.
+        .comments,
+        .forum-response .action-show-comments {
+            background: $primary-light-d;
+        }
+        .comments blockquote {
+            background: $body-bg-d;
+            color: $text-color-d;
+        }
+        .discussion-thread .discussion-article .thread-wrapper {
+            background-color: $primary-light-d;
+        }
+        .post-tools {
+            background: $primary-light-d !important;
+
+            &:hover {
+                background: $light-overlay-d !important;
+            }
+        }
+    }
     .modal .inner-wrapper{
         background: $body-bg-d;
         color: $text-color-d;
