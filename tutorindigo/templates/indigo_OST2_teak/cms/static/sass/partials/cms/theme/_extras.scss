@@ -3,3 +3,20 @@
 #main{
     background-color: $secondary;
 }
+
+// OST2 fix (reported 2026-08-30): in the Markdown XBlock's Studio editor the
+// CodeMirror line-number gutter covered the Save / Cancel bar. The gutter is
+// `position: absolute; z-index: 3` inside .CodeMirror, which Studio sizes to a
+// flat 365px ([class*="view-"] .modal-window .CodeMirror), while the action bar
+// is pinned over the editor's last ~24px with `position: absolute; bottom: 0`
+// and no z-index of its own. So the gutter won the paint order AND the clicks:
+// elementFromPoint at the Save button's top-left corner returned
+// .CodeMirror-gutter.CodeMirror-linenumbers.
+//
+// Lift the bar above the gutter rather than shrinking the editor: the bar is
+// already opaque white, so one declaration both hides the overlap and gives the
+// buttons their full hit area back, with no layout maths that would break if
+// Studio's modal height changes.
+.wrapper-comp-editor[data-editor] .markdown-editor + .xblock-actions {
+    z-index: 4;
+}
