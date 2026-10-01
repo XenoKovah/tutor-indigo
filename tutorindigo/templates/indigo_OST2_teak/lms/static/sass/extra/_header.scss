@@ -296,6 +296,10 @@ header.global-header {
 body.indigo-dark-theme {
     background: $body-bg-d !important;
     color: $text-color-d !important;
+    .header-logo .logo,
+    .logo-header .logo-image {
+        content: url('/theming/asset/images/logo-dark.png');
+    }
     .window-wrap {
         background: $body-bg-d;
     }

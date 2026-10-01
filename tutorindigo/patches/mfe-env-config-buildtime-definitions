@@ -189,5 +189,9 @@ const AddDarkTheme = () => {
     return () => observer?.disconnect();
   }, []);
 
-  return (<div />);
+  // OST2: swap the header logo for the white-on-black variant in dark mode.
+  // LOGO_URL comes from MFE_CONFIG (/theming/asset/images/logo.png on the LMS).
+  const darkLogoCss = { __html: 'body.indigo-dark-theme img[src$="/images/logo.png"]{content:url(' + getConfig().LMS_BASE_URL + '/theming/asset/images/logo-dark.png);}' };
+
+  return (<div><style dangerouslySetInnerHTML={darkLogoCss} /></div>);
 };
