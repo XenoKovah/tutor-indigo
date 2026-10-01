@@ -213,6 +213,40 @@ RUN grep -qF '.container-xl {' node_modules/@edx/brand/paragon/_overrides.scss \
 # that fork gets stock upstream labels and no current grade. Do not re-add the patches while the
 # fork is pinned: their guard greps no longer match and would fail the image build.
 
+# OST2: make the shared MFE header say "My Enrolled Courses" / "Discover New Courses" everywhere,
+# matching the legacy LMS header and the learner-dashboard MFE.
+#
+# * discussions renders the header package's LearningHeader, whose main-bar links are the
+#   `mycourses` / `discover` messages in learning-header/messages.js (the same two relabels as
+#   the learning MFE gets above; the package ships no translations).
+# * account and profile render the plain Header, whose default main menu is a single "Courses"
+#   link to /dashboard. Relabel it and append a "Discover New Courses" link to /courses (the
+#   mobile menu is built from the same list). Single-line sed edits against the package's compiled
+#   output, each preceded by an exact-line grep guard so the image build fails loudly if the
+#   header package changes shape.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-post-npm-install-discussions",
+        r"""
+RUN grep -qF "defaultMessage: 'Discover'," node_modules/@edx/frontend-component-header/dist/learning-header/messages.js \
+ && grep -qF "defaultMessage: 'My Courses'," node_modules/@edx/frontend-component-header/dist/learning-header/messages.js \
+ && sed -i "s/defaultMessage: 'Discover',/defaultMessage: 'Discover New Courses',/; s/defaultMessage: 'My Courses',/defaultMessage: 'My Enrolled Courses',/" node_modules/@edx/frontend-component-header/dist/learning-header/messages.js
+""",
+    )
+)
+for _plain_header_mfe in ("account", "profile"):
+    hooks.Filters.ENV_PATCHES.add_item(
+        (
+            "mfe-dockerfile-post-npm-install-" + _plain_header_mfe,
+            r"""
+RUN grep -qF "defaultMessage: 'Courses'," node_modules/@edx/frontend-component-header/dist/Header.messages.js \
+ && grep -qxF "    content: intl.formatMessage(messages['header.links.courses'])" node_modules/@edx/frontend-component-header/dist/Header.js \
+ && sed -i "s/defaultMessage: 'Courses',/defaultMessage: 'My Enrolled Courses',/" node_modules/@edx/frontend-component-header/dist/Header.messages.js \
+ && sed -i "s#^    content: intl.formatMessage(messages\['header.links.courses'\])\$#    content: intl.formatMessage(messages['header.links.courses'])\n  }, {\n    type: 'item',\n    href: \"\".concat(config.LMS_BASE_URL, \"/courses\"),\n    content: 'Discover New Courses'#" node_modules/@edx/frontend-component-header/dist/Header.js
+""",
+        )
+    )
+
 # OST2: Learning MFE "Enroll now" (EnrollmentAlert / PrivateCourseAlert) -> when the LMS
 # enrollment API refuses because the learner has too many 0%-complete enrollments (see the
 # ost2_unstarted_enrollment_guard tutor plugin), it answers 403 with JSON ost2_redirect;
