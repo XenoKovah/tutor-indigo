@@ -1,14 +1,22 @@
 <%page expression_filter="h"/>
+<%! from django.utils.translation import gettext as _ %>
 <div class="wrapper-footer">
 
     <footer class="footer-app" role="contentinfo" id="company-info">
-        <nav class="footer-app-nav">
-            <ul class="list list-legal">
-                <li class="nav-item">
-                    <a class="action btn btn-small btn-link" href="/tos">Terms of Service &amp; Privacy Policy</a>
+        {% if INDIGO_FOOTER_NAV_LINKS %}
+        <nav class="nav-colophon" aria-label="${_('About')}">
+            <ol>
+                {% for link in INDIGO_FOOTER_NAV_LINKS %}
+                <li>
+                    <a href="{{ link['url'] }}">{{ link['title'] }}</a>
                 </li>
-            </ul>
+                {% endfor %}
+            </ol>
         </nav>
+        {% endif %}
+        <div class="lil-stranger-telescope">
+            <a href="/lil-stranger/"><img src="/lil-stranger/telescope.webp" alt="Looking for how to help..."></a>
+        </div>
     </footer>
 
 </div>
