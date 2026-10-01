@@ -44,6 +44,10 @@ const OST2Footer = () => {
   const footerNavLinks = getConfig().INDIGO_FOOTER_NAV_LINKS || [];
   const ost2MfeCss = { __html: `.wrapper-footer .nav-colophon a{color:#1a1a1a !important;}body.indigo-dark-theme .wrapper-footer .nav-colophon a{color:#f8f8f8 !important;}.wrapper-footer .nav-colophon a:hover,.wrapper-footer .nav-colophon a:focus{text-decoration:underline;}body.indigo-dark-theme .pgn__stateful-btn{color:#0d0d0e !important;}body.indigo-dark-theme .pgn__form-switch-helper-text{color:#b0b0b0 !important;}` };
 
+  // Style objects are consts, not inline props, because a double open-brace is a Jinja print.
+  const telescopeWrapStyle = { textAlign: 'center', margin: '12px 0 0' };
+  const telescopeImgStyle = { height: '110px', width: 'auto' };
+
   return (
     <div className="wrapper wrapper-footer">
       {/* OST2: this <style> renders on EVERY MFE (the footer is global), so it carries a
@@ -70,12 +74,12 @@ const OST2Footer = () => {
             </nav>
           )}
           {/* Li'l Stranger peering up at the links; links to the LMS hello page. */}
-          <div className="lil-stranger-telescope" style={{ textAlign: 'center', margin: '12px 0 0' }}>
+          <div className="lil-stranger-telescope" style={telescopeWrapStyle}>
             <a href={`${getConfig().LMS_BASE_URL}/lil-stranger/`}>
               <img
                 src={`${getConfig().LMS_BASE_URL}/lil-stranger/telescope.webp`}
                 alt="Looking for how to help..."
-                style={{ height: '110px', width: 'auto' }}
+                style={telescopeImgStyle}
               />
             </a>
           </div>
