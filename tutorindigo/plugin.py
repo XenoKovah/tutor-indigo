@@ -206,43 +206,12 @@ RUN grep -qF '.container-xl {' node_modules/@edx/brand/paragon/_overrides.scss \
     )
 )
 
-# OST2: consistent logged-in course-nav labels across surfaces (legacy Mako header +
-# /courses use "My Enrolled Courses" / "Discover New Courses"; see navbar-authenticated.html).
-# The learner-dashboard MFE header's stock "Courses" / "Discover New" are reworded here
-# (messages.js defaultMessages; guarded so the build fails loudly if upstream moves them).
-hooks.Filters.ENV_PATCHES.add_item(
-    (
-        "mfe-dockerfile-pre-npm-build-learner-dashboard",
-        """
-RUN grep -qF "defaultMessage: 'Discover New'," src/containers/LearnerDashboardHeader/messages.js \\
- && grep -qF "defaultMessage: 'Courses'," src/containers/LearnerDashboardHeader/messages.js \\
- && sed -i "s/defaultMessage: 'Discover New',/defaultMessage: 'Discover New Courses',/; s/defaultMessage: 'Courses',/defaultMessage: 'My Enrolled Courses',/" src/containers/LearnerDashboardHeader/messages.js
-""",
-    )
-)
-
-# OST2: learner-dashboard grade banners read "Grade required to pass the course: 99%. Current
-# grade: 0%" (and the same for "...for a certificate") so learners can spot never-started
-# courses to unenroll from (see ost2_unstarted_enrollment_guard). percentGraded (0-1 fraction,
-# edx-platform learner_home BFF) is surfaced by the courseCard gradeData selector, floored to
-# an integer percent. Guard-chained so the build fails loudly if upstream moves any target.
-hooks.Filters.ENV_PATCHES.add_item(
-    (
-        "mfe-dockerfile-pre-npm-build-learner-dashboard",
-        """
-RUN grep -qF "(gradeData) => ({ isPassing: gradeData.isPassing })," src/data/redux/app/selectors/courseCard.js \\
- && grep -qF "const { isPassing } = reduxHooks.useCardGradeData(cardId);" src/containers/CourseCard/components/CourseCardBanners/CertificateBanner.jsx \\
- && grep -qF "messages.passingGrade, { minPassingGrade }" src/containers/CourseCard/components/CourseCardBanners/CertificateBanner.jsx \\
- && grep -qF "messages.certMinGrade, { minPassingGrade }" src/containers/CourseCard/components/CourseCardBanners/CertificateBanner.jsx \\
- && grep -qF "Grade required to pass the course: {minPassingGrade}" src/containers/CourseCard/components/CourseCardBanners/messages.js \\
- && grep -qF "Grade required for a certificate: {minPassingGrade}" src/containers/CourseCard/components/CourseCardBanners/messages.js \\
- && sed -i "s#(gradeData) => ({ isPassing: gradeData.isPassing }),#(gradeData) => ({ isPassing: gradeData.isPassing, percentGraded: Math.floor((gradeData.percentGraded || 0) * 100) }),#" src/data/redux/app/selectors/courseCard.js \\
- && sed -i "s#const { isPassing } = reduxHooks.useCardGradeData(cardId);#const { isPassing, percentGraded } = reduxHooks.useCardGradeData(cardId);#; s#messages.passingGrade, { minPassingGrade }#messages.passingGrade, { minPassingGrade, currentGrade: percentGraded }#; s#messages.certMinGrade, { minPassingGrade }#messages.certMinGrade, { minPassingGrade, currentGrade: percentGraded }#" src/containers/CourseCard/components/CourseCardBanners/CertificateBanner.jsx \\
- && sed -i "s#\\(Grade required to pass the course: {minPassingGrade}\\)\\(.\\{6\\}\\)%',#\\1\\2%. Current grade: {currentGrade}\\2%',#; s#\\(Grade required for a certificate: {minPassingGrade}\\)\\(.\\{6\\}\\)%',#\\1\\2%. Current grade: {currentGrade}\\2%',#" src/containers/CourseCard/components/CourseCardBanners/messages.js \\
- && grep -qF "Current grade: {currentGrade}" src/containers/CourseCard/components/CourseCardBanners/messages.js
-""",
-    )
-)
+# NOTE: the learner-dashboard header labels ("My Enrolled Courses" / "Discover New Courses") and
+# the "Current grade: N%" grade banners used to be sed patches here. They now live in source on
+# the learner-dashboard fork branch pinned by the ost2_learner_dashboard_mfe_fork tutor plugin
+# (frontend-app-learner-dashboard@teak3_3_ost2-dashboard-customizations). A box that does NOT pin
+# that fork gets stock upstream labels and no current grade. Do not re-add the patches while the
+# fork is pinned: their guard greps no longer match and would fail the image build.
 
 # OST2: Learning MFE "Enroll now" (EnrollmentAlert / PrivateCourseAlert) -> when the LMS
 # enrollment API refuses because the learner has too many 0%-complete enrollments (see the
