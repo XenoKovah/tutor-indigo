@@ -22,7 +22,10 @@
 // sass/extra/_footer.scss are re-stated here with literal hex (this bundle does
 // not import the theme's variables). Dark-mode link colour is set in the
 // body.indigo-dark-theme.certificate block below (.wrapper-footer a).
-.footer-app {
+// The stock cert .footer-app is a flex row (justify-content: flex-start), which ignores
+// text-align and left-justified the links and telescope; make it a plain centered block.
+.wrapper-footer .footer-app {
+    display: block;
     text-align: center;
 
     .nav-colophon {
