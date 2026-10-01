@@ -412,6 +412,8 @@ hooks.Filters.ENV_PATCHES.add_item(
         """
 RUN grep -q "defaultMessage: 'Discover'," node_modules/@edx/frontend-component-header/dist/learning-header/messages.js \\
  && sed -i "s/defaultMessage: 'Discover',/defaultMessage: 'Discover New Courses',/" node_modules/@edx/frontend-component-header/dist/learning-header/messages.js
+RUN grep -q "defaultMessage: 'My Courses'," node_modules/@edx/frontend-component-header/dist/learning-header/messages.js \\
+ && sed -i "s/defaultMessage: 'My Courses',/defaultMessage: 'My Enrolled Courses',/" node_modules/@edx/frontend-component-header/dist/learning-header/messages.js
 RUN grep -qF "a {color: #ccc;}" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js \\
  && sed -i "s/a {color: #ccc;}/a {color: #AEC7F6;}/" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js
 RUN grep -qF "color: #ccc;" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js \\
