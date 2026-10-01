@@ -206,6 +206,36 @@ RUN grep -qF '.container-xl {' node_modules/@edx/brand/paragon/_overrides.scss \
     )
 )
 
+# OST2: consistent logged-in course-nav labels across surfaces (legacy Mako header +
+# /courses use "My Enrolled Courses" / "Discover New Courses"; see navbar-authenticated.html).
+# The learner-dashboard MFE header's stock "Courses" / "Discover New" are reworded here
+# (messages.js defaultMessages; guarded so the build fails loudly if upstream moves them).
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-pre-npm-build-learner-dashboard",
+        """
+RUN grep -qF "defaultMessage: 'Discover New'," src/containers/LearnerDashboardHeader/messages.js \\
+ && grep -qF "defaultMessage: 'Courses'," src/containers/LearnerDashboardHeader/messages.js \\
+ && sed -i "s/defaultMessage: 'Discover New',/defaultMessage: 'Discover New Courses',/; s/defaultMessage: 'Courses',/defaultMessage: 'My Enrolled Courses',/" src/containers/LearnerDashboardHeader/messages.js
+""",
+    )
+)
+
+# OST2: Learning MFE "Enroll now" (EnrollmentAlert / PrivateCourseAlert) -> when the LMS
+# enrollment API refuses because the learner has too many 0%-complete enrollments (see the
+# ost2_unstarted_enrollment_guard tutor plugin), it answers 403 with JSON ost2_redirect;
+# follow that URL instead of failing silently. The never-resolving promise keeps the
+# spinner up until the browser navigates away.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-pre-npm-build-learning",
+        """
+RUN grep -qF "const { data } = await getAuthenticatedHttpClient().post(url, { course_details: { course_id: courseId } });" src/alerts/enrollment-alert/data/api.js \\
+ && sed -i "s#const { data } = await getAuthenticatedHttpClient().post(url, { course_details: { course_id: courseId } });#const { data } = await getAuthenticatedHttpClient().post(url, { course_details: { course_id: courseId } }).catch((e) => { const r = e \\&\\& e.response \\&\\& e.response.data \\&\\& e.response.data.ost2_redirect; if (r) { global.location.assign(r); return new Promise(() => {}); } throw e; });#" src/alerts/enrollment-alert/data/api.js
+""",
+    )
+)
+
 # OST2: reword the authn hero lead-in "Start learning" -> "Level up your
 # skills" (keeps "with {siteName}"). Source string in default-layout/
 # messages.js, so it runs at the pre-npm-build anchor (src/ is COPY'd in just
@@ -358,7 +388,7 @@ hooks.Filters.ENV_PATCHES.add_item(
         "mfe-dockerfile-post-npm-install-learning",
         """
 RUN grep -q "defaultMessage: 'Discover'," node_modules/@edx/frontend-component-header/dist/learning-header/messages.js \\
- && sed -i "s/defaultMessage: 'Discover',/defaultMessage: 'See All Courses',/" node_modules/@edx/frontend-component-header/dist/learning-header/messages.js
+ && sed -i "s/defaultMessage: 'Discover',/defaultMessage: 'Discover New Courses',/" node_modules/@edx/frontend-component-header/dist/learning-header/messages.js
 RUN grep -qF "a {color: #ccc;}" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js \\
  && sed -i "s/a {color: #ccc;}/a {color: #AEC7F6;}/" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js
 RUN grep -qF "color: #ccc;" node_modules/@edx/frontend-component-header/dist/ThemeToggleButton.js \\
