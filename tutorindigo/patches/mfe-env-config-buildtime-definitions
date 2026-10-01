@@ -46,7 +46,7 @@ const OST2Footer = () => {
 
   // Style objects are consts, not inline props, because a double open-brace is a Jinja print.
   const telescopeWrapStyle = { textAlign: 'center', margin: '12px 0 0' };
-  const telescopeImgStyle = { height: '110px', width: 'auto' };
+  const telescopeImgStyle = { height: '165px', width: 'auto' };
 
   return (
     <div className="wrapper wrapper-footer">
