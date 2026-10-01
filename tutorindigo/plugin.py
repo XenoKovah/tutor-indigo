@@ -221,6 +221,29 @@ RUN grep -qF "defaultMessage: 'Discover New'," src/containers/LearnerDashboardHe
     )
 )
 
+# OST2: learner-dashboard grade banners read "Grade required to pass the course: 99%. Current
+# grade: 0%" (and the same for "...for a certificate") so learners can spot never-started
+# courses to unenroll from (see ost2_unstarted_enrollment_guard). percentGraded (0-1 fraction,
+# edx-platform learner_home BFF) is surfaced by the courseCard gradeData selector, floored to
+# an integer percent. Guard-chained so the build fails loudly if upstream moves any target.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-pre-npm-build-learner-dashboard",
+        """
+RUN grep -qF "(gradeData) => ({ isPassing: gradeData.isPassing })," src/data/redux/app/selectors/courseCard.js \\
+ && grep -qF "const { isPassing } = reduxHooks.useCardGradeData(cardId);" src/containers/CourseCard/components/CourseCardBanners/CertificateBanner.jsx \\
+ && grep -qF "messages.passingGrade, { minPassingGrade }" src/containers/CourseCard/components/CourseCardBanners/CertificateBanner.jsx \\
+ && grep -qF "messages.certMinGrade, { minPassingGrade }" src/containers/CourseCard/components/CourseCardBanners/CertificateBanner.jsx \\
+ && grep -qF "Grade required to pass the course: {minPassingGrade}" src/containers/CourseCard/components/CourseCardBanners/messages.js \\
+ && grep -qF "Grade required for a certificate: {minPassingGrade}" src/containers/CourseCard/components/CourseCardBanners/messages.js \\
+ && sed -i "s#(gradeData) => ({ isPassing: gradeData.isPassing }),#(gradeData) => ({ isPassing: gradeData.isPassing, percentGraded: Math.floor((gradeData.percentGraded || 0) * 100) }),#" src/data/redux/app/selectors/courseCard.js \\
+ && sed -i "s#const { isPassing } = reduxHooks.useCardGradeData(cardId);#const { isPassing, percentGraded } = reduxHooks.useCardGradeData(cardId);#; s#messages.passingGrade, { minPassingGrade }#messages.passingGrade, { minPassingGrade, currentGrade: percentGraded }#; s#messages.certMinGrade, { minPassingGrade }#messages.certMinGrade, { minPassingGrade, currentGrade: percentGraded }#" src/containers/CourseCard/components/CourseCardBanners/CertificateBanner.jsx \\
+ && sed -i "s#\\(Grade required to pass the course: {minPassingGrade}\\)\\(.\\{6\\}\\)%',#\\1\\2%. Current grade: {currentGrade}\\2%',#; s#\\(Grade required for a certificate: {minPassingGrade}\\)\\(.\\{6\\}\\)%',#\\1\\2%. Current grade: {currentGrade}\\2%',#" src/containers/CourseCard/components/CourseCardBanners/messages.js \\
+ && grep -qF "Current grade: {currentGrade}" src/containers/CourseCard/components/CourseCardBanners/messages.js
+""",
+    )
+)
+
 # OST2: Learning MFE "Enroll now" (EnrollmentAlert / PrivateCourseAlert) -> when the LMS
 # enrollment API refuses because the learner has too many 0%-complete enrollments (see the
 # ost2_unstarted_enrollment_guard tutor plugin), it answers 403 with JSON ost2_redirect;
