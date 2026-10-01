@@ -69,6 +69,16 @@ const OST2Footer = () => {
               </ol>
             </nav>
           )}
+          {/* Li'l Stranger peering up at the links; links to the LMS hello page. */}
+          <div className="lil-stranger-telescope" style={{ textAlign: 'center', margin: '12px 0 0' }}>
+            <a href={`${getConfig().LMS_BASE_URL}/lil-stranger/`}>
+              <img
+                src={`${getConfig().LMS_BASE_URL}/lil-stranger/telescope.webp`}
+                alt="Looking for how to help..."
+                style={{ height: '110px', width: 'auto' }}
+              />
+            </a>
+          </div>
         </div>
       </footer>
     </div>
