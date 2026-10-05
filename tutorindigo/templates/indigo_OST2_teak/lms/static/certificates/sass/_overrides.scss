@@ -221,6 +221,17 @@ body.indigo-dark-theme.certificate {
         word-break: break-all;
     }
 }
+// OST2: signatory organization links (_accomplishment-rendering.html). Look like
+// the plain text, in both themes and in print; underline on hover only.
+.accomplishment-rendering .instructor-org-link {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover,
+    &:focus {
+        text-decoration: underline;
+    }
+}
 body.indigo-dark-theme.certificate .accomplishment-rendering .accomplishment-cert-footer {
     color: #1c1c1c;
 }

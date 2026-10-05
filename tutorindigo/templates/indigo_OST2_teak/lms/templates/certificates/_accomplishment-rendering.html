@@ -41,6 +41,18 @@ try:
     cert_tier = certificate_tier_context(accomplishment_copy_username, course_id)
 except Exception:
     cert_tier = None
+
+# OST2: signatory organizations that link to their website (exact Studio
+# "Organization" values). Others, e.g. "Independent Researcher", stay plain text.
+ost2_org_urls = dict([
+    ('Dark Mentor LLC', 'https://darkmentor.com'),
+    ('EZSecLab', 'https://ezseclab.com/'),
+    ('GRIMM', 'https://grimmcyber.com/'),
+    ('TPM.dev', 'https://tpm.dev'),
+    ('3mdeb', 'https://3mdeb.com/'),
+    ('Vector 35', 'https://vector35.com/'),
+    ('barbieauglend.re', 'https://barbieauglend.re/'),
+])
 %>
 
 <main class="accomplishment accomplishment-main">
@@ -98,7 +110,12 @@ except Exception:
                                     <div class="signatory instructor-meta">
                                         <div class="instructor-name">${signatory['name']}</div>
                                         <div class="instructor-title">${signatory['title']}</div>
-                                        <div class="instructor-title">${signatory['organization']}</div>
+                                        <% org_url = ost2_org_urls.get((signatory.get('organization') or '').strip()) %>
+                                        % if org_url:
+                                            <div class="instructor-title"><a class="instructor-org-link" href="${org_url}" target="_blank" rel="noopener">${signatory['organization']}</a></div>
+                                        % else:
+                                            <div class="instructor-title">${signatory['organization']}</div>
+                                        % endif
                                         <img class="signatory-signature" src="${static.url(signatory['signature_image_path'])}" alt="${signatory['name']}" />
                                     </div>
                                 % endif
