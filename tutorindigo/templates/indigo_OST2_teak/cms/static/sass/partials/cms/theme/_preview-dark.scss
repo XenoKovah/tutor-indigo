@@ -1,0 +1,34 @@
+// OST2: dark theme for the Studio unit preview (container_embed) inside the
+// Authoring MFE. js/studio-preview-dark.js sets `body.indigo-dark-theme` there,
+// following the Indigo toggle in the MFE header. The aim is that instructors see
+// their content the way learners do in dark mode, so the content rules are the
+// LMS theme's own xblock dark rules (imported below), with the same palette.
+
+// Dark palette, as in lms/static/sass/partials/lms/theme/_variables.scss.
+$primary-d: #AEC7F6;
+$primary-light-d: #292A2C;
+$gray-light: #E5E7EB;
+$light-dark-d: #374151;
+$text-color-d: #F8F8F8;
+$text-color-primary: #DDDFE2;
+$border-color-d: #777792;
+$light-overlay-d: #36383B;
+$danger-d: #FFA07A;
+$success-d: #54CF5E;
+$btn-color-d: #112F6B;
+$body-bg-d: #0D0D0E;
+
+body.indigo-dark-theme.view-container {
+    background: $body-bg-d;
+    color: $text-color-d;
+
+    #content,
+    .wrapper-content,
+    .content-primary {
+        background: $body-bg-d;
+    }
+}
+
+// The same rules the LMS unit iframe gets in dark mode (all scoped to
+// `.indigo-dark-theme`).
+@import "../../../../../../lms/static/sass/xblock/xblock";

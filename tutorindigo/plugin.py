@@ -885,6 +885,11 @@ dark_theme_filepath = ['indigo_OST2_teak/js/dark-theme.js']
 for filename in javascript_files:
     if filename in PIPELINE['JAVASCRIPT']:
         PIPELINE['JAVASCRIPT'][filename]['source_filenames'] += dark_theme_filepath
+
+# OST2: Studio's unit preview iframe follows the Authoring MFE theme toggle. The
+# LMS has a base_vendor group too, so match the CMS bundle by its output file.
+if PIPELINE['JAVASCRIPT'].get('base_vendor', {}).get('output_filename') == 'js/cms-base-vendor.js':
+    PIPELINE['JAVASCRIPT']['base_vendor']['source_filenames'] += ['indigo_OST2_teak/js/studio-preview-dark.js']
 """,
         ),
         # for development
