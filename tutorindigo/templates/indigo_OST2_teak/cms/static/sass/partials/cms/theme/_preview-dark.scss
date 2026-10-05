@@ -27,6 +27,72 @@ body.indigo-dark-theme.view-container {
     .content-primary {
         background: $body-bg-d;
     }
+
+    // Each component's card: Studio paints the body white with #2F2F2F text and
+    // the edit pencil as a black-filled mask.
+    .wrapper-xblock.level-element {
+        background: $body-bg-d;
+        border-color: $light-overlay-d;
+        color: $text-color-d;
+
+        .xblock-header-primary {
+            background: $body-bg-d;
+            border-bottom-color: $light-overlay-d;
+            color: $text-color-d;
+
+            .xblock-display-name,
+            .action-button,
+            .action-button .icon {
+                color: $text-color-d;
+            }
+
+            .edit-button::before {
+                background-color: $text-color-d;
+            }
+
+            .action-button:hover .icon {
+                color: $primary-d;
+            }
+
+            // The rule under the header row.
+            &::before {
+                background-color: $light-overlay-d;
+            }
+
+            // The component's actions menu. Studio's item rules are long
+            // selectors, so these repeat the same chain to outrank them.
+            .header-actions .nav-dd .nav-sub {
+                background: $primary-light-d;
+                border-color: $light-overlay-d;
+
+                .nav-item {
+                    color: $text-color-d;
+
+                    a,
+                    a:hover {
+                        color: $text-color-d;
+                    }
+
+                    &:hover {
+                        background-color: $light-overlay-d;
+                    }
+                }
+            }
+        }
+
+        .xblock-render {
+            background: $body-bg-d;
+            color: $text-color-d;
+        }
+    }
+}
+
+// Both themes: Studio's normalize sets `summary { display: block }`, which drops
+// the <details> disclosure triangle (Markdown XBlock collapsible sections). The
+// LMS keeps the browser default, `list-item`.
+.xblock-render summary {
+    display: list-item;
+    cursor: pointer;
 }
 
 // The same rules the LMS unit iframe gets in dark mode (all scoped to
