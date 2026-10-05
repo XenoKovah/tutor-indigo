@@ -1477,8 +1477,10 @@ body.indigo-dark-theme {
       background: $primary-light-d !important;
       color: $text-color-d !important;
     }
+    // !important: the platform rule is ID-scoped
+    // (#membership ... .auth-list-container .revoke).
     .revoke {
-      color: #B0B0B0;
+      color: #B0B0B0 !important;
     }
   }
   .bottom-bar {
