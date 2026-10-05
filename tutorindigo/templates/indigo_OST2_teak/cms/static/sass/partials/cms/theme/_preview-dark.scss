@@ -83,6 +83,53 @@ body.indigo-dark-theme.view-container {
         .xblock-render {
             background: $body-bg-d;
             color: $text-color-d;
+
+            // Studio's preview rules are deeply nested (e.g. `.wrapper-xblock
+            // .xblock-render .xblock .xblock-render .xblock .hd-2`, 0,6,0), so
+            // the LMS theme's `.indigo-dark-theme .hd-2` loses here. These
+            // match what the LMS unit shows in dark mode.
+            h1, h2, h3, h4, h5, h6,
+            .hd-1, .hd-2, .hd-3, .hd-4, .hd-5, .hd-6, .hd-7, .hd-8 {
+                color: $text-color-d;
+            }
+
+            // CAPA Show answer / Reset etc.: the LMS shows them as accent-coloured
+            // text links; Studio leaves the browser's light button face.
+            .problem-action-btn {
+                background: transparent;
+                color: $primary-d;
+            }
+
+            input[type="text"],
+            input[type="email"],
+            textarea {
+                background: transparent;
+                color: $text-color-d;
+                border-color: $border-color-d;
+            }
+
+            // Studio's own author views (Problem Bank, library blocks).
+            .xblock-author_view p {
+                color: $text-color-d;
+            }
+        }
+
+        // The Problem Bank / library sub-header bars.
+        .xblock-header-secondary {
+            background: $primary-light-d;
+            border-color: $light-overlay-d;
+            color: $text-color-d;
+
+            .action-button,
+            .action-button-text {
+                color: $primary-d;
+            }
+        }
+
+        // Validation notices (e.g. "No content library selected").
+        .wrapper-xblock-message .xblock-message.validation {
+            background: $light-overlay-d;
+            color: $text-color-d;
         }
     }
 }
@@ -93,6 +140,23 @@ body.indigo-dark-theme.view-container {
 .xblock-render summary {
     display: list-item;
     cursor: pointer;
+}
+
+// Both themes: Markdown XBlock spacing as in the LMS. Studio's body sets a fixed
+// 23.68px line-height that the 24-32px <summary> headings inherit, so they
+// overlapped; the LMS uses a relative 1.4. Paragraph spacing likewise follows
+// the LMS (1.41575em below, 20px between consecutive paragraphs) instead of
+// Studio's 10px.
+.xblock-render .markdown_xblock {
+    line-height: 1.4;
+
+    p {
+        margin: 0 0 1.41575em;
+    }
+
+    p + p {
+        margin-top: 20px;
+    }
 }
 
 // The same rules the LMS unit iframe gets in dark mode (all scoped to
