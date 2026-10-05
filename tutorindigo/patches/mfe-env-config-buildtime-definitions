@@ -42,7 +42,7 @@
 // because OST2's footer links are absolute (https://ost2.fyi/...).
 const OST2Footer = () => {
   const footerNavLinks = getConfig().INDIGO_FOOTER_NAV_LINKS || [];
-  const ost2MfeCss = { __html: `.wrapper-footer .nav-colophon a{color:#1a1a1a !important;}body.indigo-dark-theme .wrapper-footer .nav-colophon a{color:#f8f8f8 !important;}.wrapper-footer .nav-colophon a:hover,.wrapper-footer .nav-colophon a:focus{text-decoration:underline;}body.indigo-dark-theme .pgn__stateful-btn{color:#0d0d0e !important;}body.indigo-dark-theme .pgn__form-switch-helper-text{color:#b0b0b0 !important;}body.indigo-dark-theme #root .alert.alert-success a.inline-link{background:none;color:#aec7f6;padding:0;}` };
+  const ost2MfeCss = { __html: `.wrapper-footer .nav-colophon a{color:#1a1a1a !important;}body.indigo-dark-theme .wrapper-footer .nav-colophon a{color:#f8f8f8 !important;}.wrapper-footer .nav-colophon a:hover,.wrapper-footer .nav-colophon a:focus{text-decoration:underline;}body.indigo-dark-theme .pgn__stateful-btn.btn-primary{color:#0d0d0e !important;}body.indigo-dark-theme .pgn__searchfield__button.btn-primary{color:#0d0d0e !important;}body.indigo-dark-theme select{color-scheme:dark;}body.indigo-dark-theme select option,body.indigo-dark-theme select optgroup{background-color:#292a2c;color:#f8f8f8;}body.indigo-dark-theme .tox .tox-toolbar-overlord,body.indigo-dark-theme .tox .tox-toolbar,body.indigo-dark-theme .tox .tox-toolbar__primary,body.indigo-dark-theme .tox .tox-toolbar__overflow{background-color:#292a2c !important;}body.indigo-dark-theme .tox .tox-tbtn svg{fill:#f8f8f8 !important;}body.indigo-dark-theme .tox .tox-tbtn--disabled svg,body.indigo-dark-theme .tox .tox-tbtn:disabled svg{fill:rgba(248,248,248,.4) !important;}body.indigo-dark-theme .tox .tox-tbtn:hover{background-color:#36383b !important;}body.indigo-dark-theme .tox .tox-tbtn__select-label,body.indigo-dark-theme .tox .tox-statusbar,body.indigo-dark-theme .tox .tox-statusbar a,body.indigo-dark-theme .tox .tox-statusbar__path-item{color:#dddfe2 !important;}body.indigo-dark-theme .pgn__form-switch-helper-text{color:#b0b0b0 !important;}body.indigo-dark-theme #root .alert.alert-success a.inline-link{background:none;color:#aec7f6;padding:0;}` };
 
   // Style objects are consts, not inline props, because a double open-brace is a Jinja print.
   const telescopeWrapStyle = { textAlign: 'center', margin: '12px 0 0' };
@@ -54,9 +54,15 @@ const OST2Footer = () => {
           few app-wide dark-mode contrast fixes that the brand theme missed:
           - footer nav links: bare <a> stuck at brand slate #374151 (~1.9:1 on dark) ->
             near-black in light, near-white in dark.
-          - .pgn__stateful-btn (e.g. the staff "View as" Submit on the learner dashboard):
-            white text stayed on the light-accent (#aec7f6) dark-mode button bg (1.7:1) ->
-            near-black, matching how the brand already darkens btn-primary text in dark.
+          - .pgn__stateful-btn.btn-primary (e.g. the staff "View as" Submit on the learner
+            dashboard): white text stayed on the light-accent (#aec7f6) dark-mode button bg
+            (1.7:1) -> near-black, matching how the brand already darkens btn-primary text in
+            dark. Only the filled variant: link-style stateful buttons ("Bookmark this page",
+            account "Reset Password") sit on the dark page and must keep light text. The
+            course-search Search button is the same case.
+          - select option lists: light text inherited onto the browser's white option list.
+          - TinyMCE (discussion post editor): navy toolbar icons on the dark toolbar, and a
+            white strip behind it.
           - .pgn__form-switch-helper-text: #707070 helper stuck in both themes (3.9:1 on
             dark) -> lighter grey in dark.
           - a.inline-link inside a success alert (Li'l Stranger mascot links, Timing Feedback

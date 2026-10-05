@@ -21,4 +21,32 @@
     z-index: 4;
 }
 
+// OST2 fix (reported 2026-10-05): the Markdown XBlock editor showed two
+// scrollbars and hid its last lines. Studio fixes the modal body at 435px
+// (`.modal-lg.modal-editor .modal-content`, overflow-y auto) and CodeMirror at
+// 365px, while the Save/Cancel bar is absolutely positioned over the bottom of
+// the body; CodeMirror's own scroller also runs ~15px past its clipped box. So
+// the body scrolled by a few px on top of CodeMirror's scroll, and the bar
+// covered the last ~2 lines. Size the body to the window, give CodeMirror the
+// body height minus the Editor/Settings tabs (28px) and the action bar (67px),
+// so CodeMirror is the only scroller and its last line ends above the bar.
+// Studio also sets `html { height: 102% }`, which made the page itself scroll
+// inside the Authoring MFE's full-window editor iframe.
+html:has(.modal-window.modal-type-markdown) {
+    height: 100%;
+}
+
+[class*="view-"] .modal-window.modal-type-markdown {
+    .modal-content {
+        height: calc(100vh - 200px);
+        max-height: none;
+        overflow-y: auto;
+    }
+
+    .CodeMirror {
+        height: calc(100vh - 295px);
+        min-height: 200px;
+    }
+}
+
 @import "preview-dark";

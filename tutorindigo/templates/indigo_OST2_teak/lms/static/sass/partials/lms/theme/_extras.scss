@@ -1470,6 +1470,16 @@ body.indigo-dark-theme {
       color: $text-color-d !important;
       background: $primary-light-d !important;
     }
+    // OST2 dark-mode sweep 2026-10-05: the Membership table header stayed
+    // #DDD and "Revoke access" #646464 (3.3:1) on the dark page.
+    table thead,
+    table thead th {
+      background: $primary-light-d !important;
+      color: $text-color-d !important;
+    }
+    .revoke {
+      color: #B0B0B0;
+    }
   }
   .bottom-bar {
     background: $primary-light-d !important;
@@ -1705,6 +1715,22 @@ body.indigo-dark-theme {
         }
       }
     }
+  }
+}
+
+// OST2 dark-mode sweep 2026-10-05 (instructor dashboard Certificates, RGG pages).
+body.indigo-dark-theme {
+  // Certificates tab, bulk exception upload: a white fake file input.
+  .customBrowseBtn .browse-file {
+    background: $primary-light-d;
+    border-color: $light-overlay-d;
+    color: $text-color-d;
+  }
+  // RGG (gamma) dashboard / accomplishments pages: plain links kept the LMS
+  // #006DAA (2.6:1 on the dark cards), e.g. "Report missing or incorrect...".
+  .dashboard-page a:not(.btn),
+  .dashboard-section a:not(.btn) {
+    color: $primary-d;
   }
 }
 

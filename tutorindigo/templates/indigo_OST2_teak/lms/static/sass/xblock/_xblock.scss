@@ -20,6 +20,16 @@
             color: $text-color-d;
         }
     }
+    // OST2 dark-mode sweep 2026-10-05: the Poll and Survey XBlocks' buttons
+    // (Submit, View/Export results) kept their light #F2F3F3 / #3B85FF faces.
+    .xblock-student_view-poll,
+    .xblock-student_view-survey {
+        .btn-brand {
+            background: $primary-d;
+            border-color: $primary-d;
+            color: $btn-color-d;
+        }
+    }
     // OST2 dark-mode fix (reported 2026-06-12): the inline-discussion XBlock's
     // forum filter bar `.forum-nav-refine-bar` keeps its platform light-grey
     // background (`theme-color("light")` = #E7E7E7, in edx-platform
