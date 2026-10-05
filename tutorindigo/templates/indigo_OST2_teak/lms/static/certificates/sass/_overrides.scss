@@ -201,3 +201,46 @@ body.indigo-dark-theme.certificate {
 // #SHAME
 // ------------------------------
 
+
+// OST2: certificate URL + "Issued On" line at the bottom of the cert card
+// (_accomplishment-rendering.html), so it is on the printed certificate.
+.accomplishment-cert-footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px 32px;
+    margin: 16px auto 0;
+    max-width: 70%;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #5e5e5e;
+
+    a {
+        color: inherit;
+        text-decoration: none;
+        word-break: break-all;
+    }
+}
+body.indigo-dark-theme.certificate .accomplishment-rendering .accomplishment-cert-footer {
+    color: #1c1c1c;
+}
+
+@media print {
+    // the footer line now carries the URL + date, so drop the separate
+    // ID/date metadata strip that otherwise spills onto a second page
+    .wrapper-accomplishment-metadata {
+        display: none !important;
+    }
+    // the extra footer line makes the card ~35px taller; trim the upstream
+    // 60px top page margin so it still fits on one landscape Letter/A4 page
+    body.certificate {
+        margin-top: 16px !important;
+    }
+    .wrapper-accomplishment-rendering {
+        margin-bottom: 0 !important;
+    }
+    .accomplishment-cert-footer,
+    body.indigo-dark-theme.certificate .accomplishment-rendering .accomplishment-cert-footer {
+        color: #000;
+    }
+}

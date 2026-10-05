@@ -105,6 +105,18 @@ except Exception:
                     </div>
                     <div class="accomplishment-verifier-signature"><img src="${static.url('certificates/images/XenoCertSignature.png')}" /></div>
                 </div>
+
+                <!-- OST2: certificate URL + issue date on the card itself, so a printed
+                     certificate (Print Certificate) carries them. share_url is the absolute
+                     /certificates/<uuid> URL built by the cert webview. -->
+                <div class="accomplishment-cert-footer">
+                    % if share_url:
+                    <span class="cert-footer-item">URL: <a href="${share_url}">${share_url}</a></span>
+                    % endif
+                    % if certificate_date_issued:
+                    <span class="cert-footer-item">${certificate_date_issued_title} ${certificate_date_issued}</span>
+                    % endif
+                </div>
             
             </div>
         </div>
