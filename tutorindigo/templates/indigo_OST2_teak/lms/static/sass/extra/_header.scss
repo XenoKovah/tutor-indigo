@@ -59,8 +59,42 @@ header.global-header {
                 margin: 0;
             }
         }
+        // OST2: course lockup on legacy course pages (e.g. the Course
+        // Leaderboard tab), matching the Learning MFE header: 18px after the
+        // logo, bold 14px name over 12px "<org> <number>", vertically centred
+        // in the 64px bar. Hidden below lg, where this header has no room.
         .course-header {
             display: none;
+
+            @include media-breakpoint-up(lg) {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                gap: 8px;
+                height: 64px;
+                margin: 0 0 0 18px;
+                max-width: 40vw;
+                min-width: 0;
+            }
+
+            .course-title,
+            .course-org {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .course-title {
+                font-size: 14px;
+                font-weight: 700;
+                line-height: 16px;
+                color: #111827;
+            }
+            .course-org {
+                font-size: 12px;
+                font-weight: 400;
+                line-height: 14px;
+                color: #515661;
+            }
         }
     }
     .nav-links {
@@ -296,6 +330,14 @@ header.global-header {
 body.indigo-dark-theme {
     background: $body-bg-d !important;
     color: $text-color-d !important;
+    header.global-header .header-logo .course-header {
+        .course-title {
+            color: $text-color-d;
+        }
+        .course-org {
+            color: $text-color-primary;
+        }
+    }
     .header-logo .logo,
     .logo-header .logo-image {
         content: url('/theming/asset/images/logo-dark.png');

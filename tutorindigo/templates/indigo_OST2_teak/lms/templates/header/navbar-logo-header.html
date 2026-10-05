@@ -37,17 +37,19 @@ enterprise_customer_link = get_enterprise_learner_portal(request)
     </a>
   % endif
   % if course:
+    ## OST2: same lockup as the Learning MFE header (bold course name over
+    ## "<org> <number>"), so legacy course pages such as the Course Leaderboard
+    ## tab keep the course title the MFE pages show.
+    <%
+    display_name = course.display_name_with_default
+    if settings.FEATURES.get('CUSTOM_COURSES_EDX', False):
+      ccx = get_current_ccx(course.id)
+      if ccx:
+        display_name = ccx.display_name
+    %>
     <div class="course-header">
-      <span class="provider">${course.display_org_with_default}:</span>
-      <span class="course-number">${course.display_number_with_default}</span>
-      <%
-      display_name = course.display_name_with_default
-      if settings.FEATURES.get('CUSTOM_COURSES_EDX', False):
-        ccx = get_current_ccx(course.id)
-        if ccx:
-          display_name = ccx.display_name
-      %>
-      <span class="course-name">${display_name}</span>
+      <span class="course-title" title="${display_name}">${display_name}</span>
+      <span class="course-org">${course.display_org_with_default} ${course.display_number_with_default}</span>
     </div>
   % endif
 </div>
