@@ -257,3 +257,23 @@ body.indigo-dark-theme.certificate .accomplishment-rendering .accomplishment-cer
         border-top: 1px solid #d9d9d9 !important;
     }
 }
+
+// OST2 dark mode: the card's light drop shadow (0 1px 2px #d9d9d9) shows as a
+// grey halo around the corner triangles on the dark page, and the triangles
+// (#111) are a shade off the page (#0d0d0e). Drop the shadow and paint the
+// triangles in the page colour so the corners read as cut-outs.
+@media screen {
+    body.indigo-dark-theme.certificate {
+        .accomplishment-rendering {
+            box-shadow: none;
+        }
+        .deco-corner-tl,
+        .deco-corner-tr {
+            border-top-color: #0d0d0e;
+        }
+        .deco-corner-bl,
+        .deco-corner-br {
+            border-bottom-color: #0d0d0e;
+        }
+    }
+}
