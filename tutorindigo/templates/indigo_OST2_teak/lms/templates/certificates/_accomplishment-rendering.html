@@ -31,12 +31,22 @@ try:
         profile_url = settings.PROFILE_MICROFRONTEND_URL + accomplishment_copy_username
 except Exception:
     profile_url = None
+
+# OST2: Course Completion tier (gold/silver/bronze/plain) from the learner's gamma
+# badge for this class; colours the name + trees and adds a tier line. None (gamma
+# plugin absent or unreachable, no tier badge yet, RGG UI hidden) renders as before.
+cert_tier = None
+try:
+    from gamma_dashboard.certificate_tier import certificate_tier_context
+    cert_tier = certificate_tier_context(accomplishment_copy_username, course_id)
+except Exception:
+    cert_tier = None
 %>
 
 <main class="accomplishment accomplishment-main">
 
     <div class="wrapper-accomplishment-rendering">
-        <div class="accomplishment-rendering">
+        <div class="accomplishment-rendering${' cert-tier-' + cert_tier['tier'] if cert_tier else ''}">
 
             <span class="deco-corner deco-corner-tl"></span>
             <span class="deco-corner deco-corner-tr"></span>
@@ -117,6 +127,9 @@ except Exception:
                     <span class="cert-footer-item">${certificate_date_issued_title} ${certificate_date_issued}</span>
                     % endif
                 </div>
+                % if cert_tier:
+                <div class="accomplishment-cert-tier">${cert_tier['label']}</div>
+                % endif
             
             </div>
         </div>

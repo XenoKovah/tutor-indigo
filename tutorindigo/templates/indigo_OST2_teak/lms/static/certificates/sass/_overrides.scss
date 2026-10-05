@@ -277,3 +277,52 @@ body.indigo-dark-theme.certificate .accomplishment-rendering .accomplishment-cer
         }
     }
 }
+
+// OST2: Course Completion tier colours (class set from the learner's gamma badge in
+// _accomplishment-rendering.html). The name and each circuit tree run light (upper
+// left) to dark (lower right), like the tier badges. The trees are pre-tinted copies
+// of trees-background.png (its white background is opaque, so it can't be a mask);
+// plain (> 12 weeks) keeps the black art and only gets the tier line.
+.accomplishment-rendering {
+    &.cert-tier-gold {
+        --cert-tier-metal: linear-gradient(to bottom right, #fcda52 0%, #ebba32 35%, #e4ab14 60%, #b8860b 100%);
+        background-image: url('../images/trees-background-gold.png');
+    }
+    &.cert-tier-silver {
+        --cert-tier-metal: linear-gradient(to bottom right, #c9c9c9 0%, #a6a6a6 40%, #7d7f82 70%, #55585c 100%);
+        background-image: url('../images/trees-background-silver.png');
+    }
+    &.cert-tier-bronze {
+        --cert-tier-metal: linear-gradient(to bottom right, #f5b875 0%, #cc8c4e 30%, #ab6d3a 60%, #7a4a22 100%);
+        background-image: url('../images/trees-background-bronze.png');
+    }
+    &.cert-tier-gold,
+    &.cert-tier-silver,
+    &.cert-tier-bronze {
+        .accomplishment-recipient-name {
+            display: table;
+            margin-left: auto;
+            margin-right: auto;
+            background: var(--cert-tier-metal);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent !important;
+        }
+    }
+}
+.accomplishment-cert-tier {
+    margin: 4px auto 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #5e5e5e;
+    text-align: center;
+}
+body.indigo-dark-theme.certificate .accomplishment-rendering .accomplishment-cert-tier {
+    color: #1c1c1c;
+}
+@media print {
+    .accomplishment-cert-tier,
+    body.indigo-dark-theme.certificate .accomplishment-rendering .accomplishment-cert-tier {
+        color: #000;
+    }
+}
