@@ -7,6 +7,18 @@
     select {
         background: transparent;
         color: $text-color-d;
+        // OST2 dark-mode fix (reported 2026-10-05, instructor dashboard
+        // Membership "Select a course team role"): the options inherit the light
+        // text above, but the browser paints the native option list white, so
+        // every unselected option was invisible. Give the list the dark surface
+        // and dark native chrome (arrow, scrollbar).
+        color-scheme: dark;
+
+        option,
+        optgroup {
+            background-color: $primary-light-d;
+            color: $text-color-d;
+        }
     }
     // OST2 dark-mode fix (reported 2026-06-12): the inline-discussion XBlock's
     // forum filter bar `.forum-nav-refine-bar` keeps its platform light-grey
