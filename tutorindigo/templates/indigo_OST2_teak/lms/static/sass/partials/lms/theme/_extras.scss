@@ -1722,11 +1722,57 @@ body.indigo-dark-theme {
 
 // OST2 dark-mode sweep 2026-10-05 (instructor dashboard Certificates, RGG pages).
 body.indigo-dark-theme {
-  // Certificates tab, bulk exception upload: a white fake file input.
+  // Certificates tab, bulk exception upload: a white fake file input; the
+  // native file input's "No file chosen" text stayed #222 on top of it.
   .customBrowseBtn .browse-file {
     background: $primary-light-d;
     border-color: $light-overlay-d;
     color: $text-color-d;
+  }
+  .customBrowseBtn input[type="file"] {
+    color: $text-color-primary;
+    color-scheme: dark;
+  }
+
+  // Certificates tab, allowlist ("Generate Exception Certificates") and
+  // invalidation-history tables: the platform paints the body white, odd rows
+  // and the header light grey (ID-scoped selectors, matched here), so the
+  // light dark-mode text vanished. Reported 2026-10-06 on Arch1901 (p).
+  .instructor-dashboard-wrapper-2 section.idash-section#certificates {
+    .allowlisted-students,
+    .invalidation-history {
+      table th {
+        background-color: $primary-light-d;
+        color: $text-color-primary;
+      }
+      table tbody {
+        background: $body-bg-d;
+        border-color: $light-overlay-d;
+
+        tr {
+          background-color: $body-bg-d;
+          border-top-color: $light-overlay-d;
+          color: $text-color-d;
+
+          &:nth-child(odd) {
+            background-color: $primary-light-d;
+          }
+          &:hover {
+            background-color: $light-overlay-d;
+          }
+          a {
+            color: $primary-d;
+          }
+        }
+        button {
+          background: $light-overlay-d;
+          border-color: $border-color-d;
+          color: $text-color-d;
+          box-shadow: none;
+          text-shadow: none;
+        }
+      }
+    }
   }
   // RGG (gamma) dashboard / accomplishments pages: plain links kept the LMS
   // #006DAA (2.6:1 on the dark cards), e.g. "Report missing or incorrect...".
