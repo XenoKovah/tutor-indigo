@@ -623,6 +623,27 @@ RUN grep -qF '.course-outline-tab {' node_modules/@edx/brand/paragon/_learning.s
     )
 )
 
+# OST2: same hide for the in-course outline SIDEBAR (CourseOutlineTray, opened
+# from inside a unit). Its section rows (SidebarSection: `.course-sidebar-section
+# > button`) and sequence rows (SidebarSequence: Paragon Collapsible
+# `.collapsible-trigger`) each render the CompletionIcon (LmsCompletionSolid grey
+# "o" / DashedCircle partial / CheckCircle) as the sole child of a direct-child
+# `.col-auto.p-0`. Hide those whole columns. The unit rows' `.col-auto.p-0` (the
+# book/video/problem type icon, under `a.row`) is NOT a direct child of either,
+# so it stays. Verified on p's live sidebar DOM (Arch1901): section + sequence
+# circles hidden, unit type icons kept, titles intact.
+hooks.Filters.ENV_PATCHES.add_item(
+    (
+        "mfe-dockerfile-post-npm-install-learning",
+        """
+RUN grep -qF '.course-outline-tab {' node_modules/@edx/brand/paragon/_learning.scss \\
+ && printf '%s\\n' \\
+ '.outline-sidebar .course-sidebar-section > button > .col-auto.p-0, .outline-sidebar .collapsible-trigger > .col-auto.p-0 { display: none !important; }' \\
+ >> node_modules/@edx/brand/paragon/_learning.scss
+""",
+    )
+)
+
 # The license removal must run at the pre-npm-build anchor: post-npm-install
 # executes in a layer that only has package.json/package-lock + node_modules
 # (the app's src/ tree is COPY'd in afterwards, just before this anchor).
