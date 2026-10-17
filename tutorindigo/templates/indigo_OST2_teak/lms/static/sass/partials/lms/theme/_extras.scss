@@ -478,7 +478,9 @@ body.view-instructordash {
         button {
           border: none !important;
           border-radius: 0 !important;
-          border-left: 1px solid $gray-light !important;
+          // the divider goes after each tab, so the last one is closed off even though
+          // responsive-nav.js appends a (usually hidden) "More..." item after it
+          border-right: 1px solid $gray-light !important;
           font-size: 14px;
           line-height: 20px;
           font-weight: 500;
@@ -509,8 +511,6 @@ body.view-instructordash {
         &:last-of-type {
           button {
             border-radius: 0 6px 6px 0;
-            // close off the last tab, so it doesn't run on to the end of the bar
-            border-right: 1px solid $gray-light !important;
           }
         }
       }
@@ -1020,7 +1020,7 @@ body.indigo-dark-theme {
           button {
             border: none !important;
             border-radius: 0 !important;
-            border-left: 1px solid $gray-light !important;
+            border-right: 1px solid $gray-light !important;
             color: $text-color-primary;
             &.active-section {
               background: $primary-d !important;
@@ -1031,11 +1031,6 @@ body.indigo-dark-theme {
             }
             &:focus {
               box-shadow: inset 0 0 0 2px #E5E7EB !important;
-            }
-          }
-          &:last-of-type {
-            button {
-              border-right: 1px solid $gray-light !important;
             }
           }
         }
