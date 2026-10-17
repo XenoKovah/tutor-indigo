@@ -281,6 +281,25 @@
     .modal .inner-wrapper{
         background: $body-bg-d;
         color: $text-color-d;
+        // the platform's white inset highlight and text glows, meant for a light box
+        box-shadow: 0 0 0 1px $light-overlay-d;
+        h2 {
+            text-shadow: none;
+        }
+        // the close "x" stayed #313131 on the dark box
+        .close-modal {
+            color: $text-color-d;
+            text-shadow: none;
+        }
+    }
+    // Discussion error pop-up ("The discussion could not be loaded..."), appended to
+    // <body>: its OK button kept lms-course's light grey gradient for plain buttons.
+    #discussion-alert .btn.dismiss:not(.close-modal) {
+        background: $primary-d;
+        border-color: $primary-d;
+        color: $btn-color-d;
+        box-shadow: none;
+        text-shadow: none;
     }
     .xblock--drag-and-drop {
         .keyboard-help-dialog {

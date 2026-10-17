@@ -1724,6 +1724,35 @@ body.indigo-dark-theme {
 
 // OST2 dark-mode sweep 2026-10-05 (instructor dashboard Certificates, RGG pages).
 body.indigo-dark-theme {
+  // Page banners (`.page-banner .alert`), e.g. "You are not signed in..." and
+  // "... is only accessible to enrolled learners" in the unit iframe: they kept
+  // the platform's light Bootstrap 3 colors (cream with black text for warnings),
+  // and the dark-theme link color on the cream was 1.6:1.
+  .page-banner .alert {
+    color: $text-color-d;
+    a,
+    a:visited,
+    .btn-link {
+      color: $primary-d;
+    }
+    &.alert-info {
+      background-color: #1b2a3f;
+      border-color: #3d5a80;
+    }
+    &.alert-success {
+      background-color: #1d3322;
+      border-color: #3f7a4a;
+    }
+    &.alert-warning {
+      background-color: #352c14;
+      border-color: #8a6d1f;
+    }
+    &.alert-danger {
+      background-color: #3a1d20;
+      border-color: #8a3a40;
+    }
+  }
+
   // Certificates tab, bulk exception upload: a white fake file input; the
   // native file input's "No file chosen" text stayed #222 on top of it.
   .customBrowseBtn .browse-file {

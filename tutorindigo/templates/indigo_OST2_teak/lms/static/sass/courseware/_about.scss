@@ -426,6 +426,11 @@ body.indigo-dark-theme {
                                 }
                             }
                         }
+                        // the platform frames each photo in white (1px padding) and a light grey border
+                        .teacher-image {
+                            background: transparent;
+                            border-color: $light-overlay-d;
+                        }
                     }
                 }
             }
