@@ -118,9 +118,9 @@ from urllib.parse import urlencode
             </a>
             <p class="cta-alt">
               ${_("All our classes are 100% free; we're a registered 501(c)(3) non-profit charity.")}
-              <a href="${reverse('signin_user')}?${enroll_params}">${_("Sign in")}</a>
-              ${_("or")}
-              <a href="${course_target}">${_("preview without an account")}</a>
+              <a href="${course_target}">${_("Preview without an account")}</a>, ${_("or")}
+              <a href="${reverse('signin_user')}?${enroll_params}">${_("sign in")}</a>
+              ${_("to keep track of your progress & accomplishments.")}
             </p>
           %elif show_courseware_link:
             <a href="${course_target}">
