@@ -154,6 +154,15 @@
             display: inline-block;
             vertical-align: top;
         }
+        .cta-alt {
+            margin: 10px 0 0;
+            font-size: 14px;
+            line-height: 20px;
+            a {
+                display: inline;
+                text-decoration: underline !important;
+            }
+        }
     }
     .about-content {
         display: flex;
@@ -404,6 +413,12 @@ body.indigo-dark-theme {
             }
             span.closed {
                 background: $primary-light-d;
+            }
+            .cta-alt {
+                color: $text-color-d;
+                a {
+                    color: $primary-d;
+                }
             }
         }
         .about-content {
