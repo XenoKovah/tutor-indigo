@@ -1791,6 +1791,14 @@ body.indigo-dark-theme {
     }
   }
 
+  // Email-change and activation result pages (e.g. "E-mail change successful!", where the account-activation
+  // notice's email-change link ends): the platform's #fcfcfc card under the dark theme's #f8f8f8 text.
+  .container.activation .message,
+  section.activation.outside-app .message {
+    background-color: $primary-light-d;
+    border-color: $light-overlay-d;
+  }
+
   // Certificates tab, bulk exception upload: a white fake file input; the
   // native file input's "No file chosen" text stayed #222 on top of it.
   .customBrowseBtn .browse-file {
