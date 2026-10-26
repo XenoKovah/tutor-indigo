@@ -83,14 +83,15 @@ h1, h2, h3, h1 span, h2 span, h3 span, .nav-item {
 
 // OST2: the page banner (lms/templates/page_banner.html, e.g. the account-activation notice) sits between the
 // header and #content, so on screens where the header is fixed it went under the header. It takes the header's
-// offset instead of #content.
+// offset instead of #content: 64px, the fixed header's height (extra/_header.scss), which is also the offset
+// dashboard/_dashboard.scss forces on #content with !important.
 @include media-breakpoint-up(lg) {
-  header.global-header ~ .page-banner {
-    margin-top: $header-height;
+  header.global-header + .page-banner {
+    margin-top: 64px;
   }
 
-  :not(.courseware) > .page-banner ~ #content.content-wrapper {
-    margin-top: 0;
+  .window-wrap > .page-banner ~ #content.content-wrapper {
+    margin-top: 0 !important;
   }
 }
 
