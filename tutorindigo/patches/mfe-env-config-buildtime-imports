@@ -1,4 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Cookies from 'universal-cookie';
 
 import { getConfig } from '@edx/frontend-platform';
+import { getAuthenticatedHttpClient, getAuthenticatedUser } from '@edx/frontend-platform/auth';
+import { FormattedMessage, defineMessages, useIntl } from '@edx/frontend-platform/i18n';
+import { Alert, Button, StatefulButton } from '@openedx/paragon';
+import { Error as ErrorIcon, WarningFilled } from '@openedx/paragon/icons';

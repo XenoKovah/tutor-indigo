@@ -204,3 +204,216 @@ const AddDarkTheme = () => {
 
   return (<div><style dangerouslySetInnerHTML={darkLogoCss} /></div>);
 };
+
+// OST2: account-activation banner. Registration signs a new learner in, but once that session ends they can't
+// sign in again until they activate their account, so every learner MFE page tells them, until they do, where
+// the activation email went and how to fix a wrong address. edx-platform decides what the notice says
+// (GET /api/account_activation_notice); the LMS's own pages show the same notice in their page banner
+// (lms/templates/page_banner.html), so keep the wording of the two in step. It can't be dismissed.
+const ost2ActivationMessages = defineMessages({
+  unactivatedTitle: {
+    id: 'ost2.accountActivation.unactivated.title',
+    defaultMessage: 'Activate your account',
+    description: 'Heading of the banner shown to signed-in learners whose account is not activated yet',
+  },
+  unactivatedBody: {
+    id: 'ost2.accountActivation.unactivated.body',
+    defaultMessage: "Your account isn't activated yet, so once you sign out you can't sign back in. To activate it, click the link in the email we sent to {email}. Can't find it? Check your spam folder.",
+    description: 'Body of the account activation banner; {email} is the address the activation email went to',
+  },
+  bouncedTitle: {
+    id: 'ost2.accountActivation.bounced.title',
+    defaultMessage: 'Your activation email bounced',
+    description: "Heading of the banner shown when the learner's activation email could not be delivered",
+  },
+  bouncedBody: {
+    id: 'ost2.accountActivation.bounced.body',
+    defaultMessage: "We couldn't deliver your activation email to {email}: that address doesn't exist, maybe because of a typo. Change your email address to activate your account. {deletion}",
+    description: 'Body of the bounced-activation banner; {deletion} is the deletion sentence, or nothing',
+  },
+  pendingTitle: {
+    id: 'ost2.accountActivation.pending.title',
+    defaultMessage: 'Confirm your new email address',
+    description: 'Heading of the activation banner after the learner asked to change their email address',
+  },
+  pendingBody: {
+    id: 'ost2.accountActivation.pending.body',
+    defaultMessage: 'We sent a confirmation link to {pendingEmail}. Click it to change your email address and activate your account. {deletion}',
+    description: 'Body of the activation banner while an email address change waits for confirmation',
+  },
+  deletion: {
+    id: 'ost2.accountActivation.deletion',
+    defaultMessage: 'Unless you do, your account will be deleted on or after {date}.',
+    description: 'Says when a learner account whose activation email bounced will be deleted',
+  },
+  resend: {
+    id: 'ost2.accountActivation.resend',
+    defaultMessage: 'Resend activation email',
+    description: 'Button that sends the account activation email again',
+  },
+  resendPending: {
+    id: 'ost2.accountActivation.resend.pending',
+    defaultMessage: 'Sending...',
+    description: 'Resend activation email button while the email is being sent',
+  },
+  resendComplete: {
+    id: 'ost2.accountActivation.resend.complete',
+    defaultMessage: 'Sent! Check your inbox and spam folder.',
+    description: 'Resend activation email button after the email was sent',
+  },
+  resendLimited: {
+    id: 'ost2.accountActivation.resend.limited',
+    defaultMessage: 'You asked for several emails today. Check your spam folder, or try again tomorrow.',
+    description: 'Shown when the learner asked for too many activation emails',
+  },
+  resendFailed: {
+    id: 'ost2.accountActivation.resend.failed',
+    defaultMessage: 'Something went wrong. Please try again.',
+    description: 'Shown when the activation email could not be sent',
+  },
+  changeWrongAddress: {
+    id: 'ost2.accountActivation.change.wrongAddress',
+    defaultMessage: 'Wrong address? Change it',
+    description: 'Link to the email address field of the account settings page',
+  },
+  changeEmail: {
+    id: 'ost2.accountActivation.change.email',
+    defaultMessage: 'Change your email address',
+    description: 'Link to the email address field of the account settings page, for a bounced activation email',
+  },
+  changeAgain: {
+    id: 'ost2.accountActivation.change.again',
+    defaultMessage: 'Use a different address',
+    description: 'Link to the email address field of the account settings page, while an address change is pending',
+  },
+});
+
+// Full-width strip above the page header. The brand's dark theme leaves alert-danger light (with light text), so
+// dark mode gets the same warning/danger surfaces as the LMS's own dark page banners (indigo _extras.scss).
+const ost2ActivationBannerCss = { __html: '.ost2-activation-banner .alert{margin:0;border-radius:0;border-width:0 0 1px;}.ost2-activation-banner .alert-message-content p:last-child{margin-bottom:0;}body.indigo-dark-theme .ost2-activation-banner .alert{color:#dddfe2;}body.indigo-dark-theme .ost2-activation-banner .alert-heading,body.indigo-dark-theme .ost2-activation-banner strong{color:#f8f8f8;}body.indigo-dark-theme .ost2-activation-banner .alert-warning{background-color:#352c14;border-color:#8a6d1f;}body.indigo-dark-theme .ost2-activation-banner .alert-danger{background-color:#3a1d20;border-color:#8a3a40;}' };
+
+// The JWT cookie's email_verified claim is the account's is_active when the cookie was made (it is remade at
+// least hourly), so active learners, nearly everyone, never call the notice API; a stale "false" costs one call.
+const ost2JwtSaysActivated = () => {
+  try {
+    const token = new Cookies().get(getConfig().ACCESS_TOKEN_COOKIE_NAME);
+    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return payload.email_verified === true;
+  } catch (e) {
+    return false;
+  }
+};
+
+const OST2AccountActivationBanner = () => {
+  const intl = useIntl();
+  const [notice, setNotice] = useState(null);
+  const [container, setContainer] = useState(null);
+  const [resendState, setResendState] = useState('default');
+
+  useEffect(() => {
+    if (!getAuthenticatedUser() || ost2JwtSaysActivated()) { return undefined; }
+    let active = true;
+    const load = () => getAuthenticatedHttpClient()
+      .get(`${getConfig().LMS_BASE_URL}/api/account_activation_notice`)
+      .then((response) => { if (active) { setNotice(response.data.notice); } })
+      .catch(() => {});
+    load();
+    // Look again when the learner comes back to this tab, e.g. from the link in their email.
+    const onVisibilityChange = () => { if (document.visibilityState === 'visible') { load(); } };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      active = false;
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, []);
+
+  // Rendered into a node at the top of <body>, above the MFE's header, so it is the first thing on every page.
+  const shown = Boolean(notice);
+  useEffect(() => {
+    if (!shown) { return undefined; }
+    const node = document.createElement('div');
+    node.className = 'ost2-activation-banner';
+    document.body.prepend(node);
+    setContainer(node);
+    return () => {
+      node.remove();
+      setContainer(null);
+    };
+  }, [shown]);
+
+  if (!notice || !container) { return null; }
+
+  const resend = () => {
+    setResendState('pending');
+    getAuthenticatedHttpClient()
+      .post(`${getConfig().LMS_BASE_URL}/api/send_account_activation_email`)
+      .then(() => setResendState('complete'))
+      .catch((error) => setResendState(error.response?.status === 429 ? 'limited' : 'failed'));
+  };
+  const resendLabels = {
+    default: intl.formatMessage(ost2ActivationMessages.resend),
+    pending: intl.formatMessage(ost2ActivationMessages.resendPending),
+    complete: intl.formatMessage(ost2ActivationMessages.resendComplete),
+    limited: intl.formatMessage(ost2ActivationMessages.resend),
+    failed: intl.formatMessage(ost2ActivationMessages.resend),
+  };
+  const emailFieldUrl = `${(getConfig().ACCOUNT_SETTINGS_URL || '').replace(/\/$/, '')}/#email`;
+  const changeLink = (message) => (
+    <Button key="change" as="a" href={emailFieldUrl} variant="outline-primary">
+      {intl.formatMessage(message)}
+    </Button>
+  );
+  const deletion = notice.delete_after ? (
+    <FormattedMessage
+      {...ost2ActivationMessages.deletion}
+      values={ {
+        date: <strong>{intl.formatDate(notice.delete_after, { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })}</strong>,
+      } }
+    />
+  ) : '';
+
+  let title;
+  let body;
+  let actions;
+  if (notice.variant === 'email_change_pending') {
+    title = ost2ActivationMessages.pendingTitle;
+    body = <FormattedMessage {...ost2ActivationMessages.pendingBody} values={ { pendingEmail: <strong>{notice.pending_email}</strong>, deletion } } />;
+    actions = [changeLink(ost2ActivationMessages.changeAgain)];
+  } else if (notice.variant === 'bounced') {
+    title = ost2ActivationMessages.bouncedTitle;
+    body = <FormattedMessage {...ost2ActivationMessages.bouncedBody} values={ { email: <strong>{notice.email}</strong>, deletion } } />;
+    actions = [changeLink(ost2ActivationMessages.changeEmail)];
+  } else {
+    title = ost2ActivationMessages.unactivatedTitle;
+    body = <FormattedMessage {...ost2ActivationMessages.unactivatedBody} values={ { email: <strong>{notice.email}</strong> } } />;
+    actions = [
+      <StatefulButton
+        key="resend"
+        state={resendState}
+        labels={resendLabels}
+        disabledStates={['pending', 'complete']}
+        variant="primary"
+        onClick={resend}
+      />,
+      changeLink(ost2ActivationMessages.changeWrongAddress),
+    ];
+  }
+
+  return createPortal(
+    <>
+      <style dangerouslySetInnerHTML={ost2ActivationBannerCss} />
+      <Alert
+        variant={notice.bounced ? 'danger' : 'warning'}
+        icon={notice.bounced ? ErrorIcon : WarningFilled}
+        actions={actions}
+        stacked
+      >
+        <Alert.Heading>{intl.formatMessage(title)}</Alert.Heading>
+        <p>{body}</p>
+        {resendState === 'limited' && <p>{intl.formatMessage(ost2ActivationMessages.resendLimited)}</p>}
+        {resendState === 'failed' && <p>{intl.formatMessage(ost2ActivationMessages.resendFailed)}</p>}
+      </Alert>
+    </>,
+    container,
+  );
+};

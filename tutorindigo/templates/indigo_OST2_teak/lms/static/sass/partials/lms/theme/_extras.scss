@@ -81,6 +81,43 @@ h1, h2, h3, h1 span, h2 span, h3 span, .nav-item {
   min-height: calc(100vh - #{$header-height + $content-padding-top + $content-padding-bottom + $footer-height}); // sticky footer
 }
 
+// OST2: the page banner (lms/templates/page_banner.html, e.g. the account-activation notice) sits between the
+// header and #content, so on screens where the header is fixed it went under the header. It takes the header's
+// offset instead of #content.
+@include media-breakpoint-up(lg) {
+  header.global-header ~ .page-banner {
+    margin-top: $header-height;
+  }
+
+  :not(.courseware) > .page-banner ~ #content.content-wrapper {
+    margin-top: 0;
+  }
+}
+
+// OST2: headed page-banner messages (a .message-header over paragraphs, e.g. the account-activation notice).
+.page-banner .alert .message-content {
+  line-height: 1.5;
+
+  .message-header {
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0.25rem 0 0;
+  }
+
+  // The resend button reads as a link like the "change it" link next to it.
+  .ost2-activation-resend {
+    margin-right: 1rem;
+    padding: 0;
+    border: 0;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: none;
+    vertical-align: baseline;
+  }
+}
+
 ////////////////// Fonts
 @import "fonts";
 

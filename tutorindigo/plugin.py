@@ -973,6 +973,15 @@ _footer_slot_ops = """
                     RenderWidget: AddDarkTheme,
                 },
             },
+            {
+                op: PLUGIN_OPERATIONS.Insert,
+                widget: {
+                    id: 'ost2_account_activation_banner',
+                    type: DIRECT_PLUGIN,
+                    priority: 3,
+                    RenderWidget: OST2AccountActivationBanner,
+                },
+            },
   """
 
 # Register the footer ops under both the legacy `footer_slot` alias and the
