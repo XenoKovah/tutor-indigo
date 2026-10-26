@@ -81,9 +81,9 @@ h1, h2, h3, h1 span, h2 span, h3 span, .nav-item {
   min-height: calc(100vh - #{$header-height + $content-padding-top + $content-padding-bottom + $footer-height}); // sticky footer
 }
 
-// OST2: the page banner (lms/templates/page_banner.html, e.g. the account-activation notice) sits between the
-// header and #content, so on screens where the header is fixed it went under the header. It takes the header's
-// offset instead of #content: 64px, the fixed header's height (extra/_header.scss), which is also the offset
+// OST2: the page banner (lms/templates/page_banner.html, e.g. "You are not signed in") sits between the header
+// and #content, so on screens where the header is fixed it went under the header. It takes the header's offset
+// instead of #content: 64px, the fixed header's height (extra/_header.scss), which is also the offset
 // dashboard/_dashboard.scss forces on #content with !important.
 @include media-breakpoint-up(lg) {
   header.global-header + .page-banner {
@@ -95,27 +95,194 @@ h1, h2, h3, h1 span, h2 span, h3 span, .nav-item {
   }
 }
 
-// OST2: headed page-banner messages (a .message-header over paragraphs, e.g. the account-activation notice).
-.page-banner .alert .message-content {
-  line-height: 1.5;
+// OST2: the account-activation notice (lms/templates/account_activation_notice.html), a full-width strip above the
+// site header. It looks like the learner MFEs' notice, a Paragon Alert (patches/mfe-env-config-buildtime-definitions):
+// the sizes and colors are the MFEs', measured.
+.ost2-activation-banner {
+  .ost2-activation-alert {
+    display: flex;
+    padding: 24px;
+    border-bottom: 1px solid #fff6bf;
+    background-color: #fffdf0;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.15), 0 1px 4px 0 rgba(0, 0, 0, 0.15);
+    color: #4b5563;
+    font-family: $font-family-title;
+    font-size: 14px;
+    line-height: 24px;
+  }
 
-  .message-header {
-    font-weight: 600;
+  .ost2-activation-icon {
+    flex: none;
+    margin-right: 0.8rem;
+    color: #ffd900;
+  }
+
+  .ost2-activation-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .ost2-activation-heading {
+    margin-bottom: 8px;
+    color: #000;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 22.5px;
   }
 
   p {
-    margin: 0.25rem 0 0;
+    margin: 0;
+    color: inherit;
+    font: inherit;
   }
 
-  // The resend button reads as a link like the "change it" link next to it.
-  .ost2-activation-resend {
-    margin-right: 1rem;
-    padding: 0;
-    border: 0;
-    font: inherit;
-    letter-spacing: inherit;
+  strong {
+    font-weight: 700;
+  }
+
+  .ost2-activation-resend-status:not(:empty) {
+    margin-top: 16px;
+  }
+
+  .ost2-activation-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .ost2-activation-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 7px 12px;
+    border: 1px solid #15376d;
+    border-radius: 4px;
+    background: transparent;
+    box-shadow: none;
+    color: #15376d;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: normal;
+    line-height: 20px;
+    text-decoration: none;
+    text-shadow: none;
     text-transform: none;
-    vertical-align: baseline;
+    cursor: pointer;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+
+    &:disabled {
+      cursor: default;
+    }
+  }
+
+  .ost2-activation-btn-primary {
+    background-color: #15376d;
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      border-color: #112c57;
+      background-color: #112c57;
+      color: #fff;
+    }
+  }
+
+  .ost2-activation-btn-outline {
+    &:visited {
+      color: #15376d;
+    }
+
+    &:hover,
+    &:focus {
+      border-color: #0f274c;
+      background-color: #f1f3f6;
+      color: #112c57;
+      text-decoration: none;
+    }
+  }
+
+  .ost2-activation-alert-danger {
+    border-bottom-color: #f0cbce;
+    background-color: #fbf2f3;
+
+    .ost2-activation-icon {
+      color: #c32d3a;
+    }
+  }
+}
+
+body.indigo-dark-theme .ost2-activation-banner {
+  .ost2-activation-alert {
+    border-bottom-color: #8a6d1f;
+    background-color: #352c14;
+    color: $text-color-primary;
+  }
+
+  .ost2-activation-heading,
+  strong {
+    color: $text-color-d;
+  }
+
+  .ost2-activation-alert-danger {
+    border-bottom-color: #8a3a40;
+    background-color: #3a1d20;
+
+    .ost2-activation-icon {
+      color: $danger-d;
+    }
+  }
+
+  .ost2-activation-btn {
+    border-color: $primary-d;
+    color: $primary-d;
+  }
+
+  .ost2-activation-btn-primary {
+    background-color: $primary-d;
+    color: $body-bg-d;
+
+    &:hover:not(:disabled) {
+      border-color: #8b9fc5;
+      background-color: #8b9fc5;
+      color: $body-bg-d;
+    }
+  }
+
+  .ost2-activation-btn-outline {
+    &:visited {
+      color: $primary-d;
+    }
+
+    &:hover,
+    &:focus {
+      border-color: #7a8bac;
+      background-color: transparent;
+      color: #8b9fc5;
+    }
+  }
+}
+
+// With the notice above it, the header stays in the page's flow, like the MFEs' header, instead of fixed to the
+// top of the window over the notice; its menus then open from the header, not from the top of the window.
+.ost2-activation-banner ~ header.global-header {
+  position: relative;
+
+  .nav-links .secondary .dropdown-user-menu {
+    position: absolute;
+  }
+}
+
+@include media-breakpoint-up(lg) {
+  .window-wrap > .ost2-activation-banner ~ #content.content-wrapper {
+    margin-top: 0 !important;
+  }
+
+  .ost2-activation-banner ~ header.global-header + .page-banner {
+    margin-top: 0;
   }
 }
 
