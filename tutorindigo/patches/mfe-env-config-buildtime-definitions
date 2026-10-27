@@ -294,7 +294,8 @@ const ost2ActivationMessages = defineMessages({
 const ost2ActivationBannerCss = { __html: '.ost2-activation-banner .alert{margin:0;border-radius:0;border-width:0 0 1px;}.ost2-activation-banner .alert-message-content p:last-child{margin-bottom:0;}.ost2-activation-banner .pgn__alert-actions{flex-wrap:wrap;gap:.5rem;}.ost2-activation-banner .alert .pgn__alert-actions .btn{margin:0;}body.indigo-dark-theme .ost2-activation-banner .alert{color:#dddfe2;}body.indigo-dark-theme .ost2-activation-banner .alert-heading,body.indigo-dark-theme .ost2-activation-banner strong{color:#f8f8f8;}body.indigo-dark-theme .ost2-activation-banner .alert-warning{background-color:#352c14;border-color:#8a6d1f;}body.indigo-dark-theme .ost2-activation-banner .alert-danger{background-color:#3a1d20;border-color:#8a3a40;}' };
 
 // The JWT cookie's email_verified claim is the account's is_active when the cookie was made (it is remade at
-// least hourly), so active learners, nearly everyone, never call the notice API; a stale "false" costs one call.
+// least hourly), so active learners, nearly everyone, never call the notice API; a stale "false" costs one call,
+// after which the banner has the cookie remade.
 const ost2JwtSaysActivated = () => {
   try {
     const token = new Cookies().get(getConfig().ACCESS_TOKEN_COOKIE_NAME);
@@ -316,7 +317,16 @@ const OST2AccountActivationBanner = () => {
     let active = true;
     const load = () => getAuthenticatedHttpClient()
       .get(`${getConfig().LMS_BASE_URL}/api/account_activation_notice`)
-      .then((response) => { if (active) { setNotice(response.data.notice); } })
+      .then((response) => {
+        if (!active) { return; }
+        setNotice(response.data.notice);
+        if (!response.data.notice) {
+          // The account is active, and stays so: stop looking, and remake the JWT cookie so that the
+          // next page doesn't ask either.
+          document.removeEventListener('visibilitychange', onVisibilityChange);
+          fetchAuthenticatedUser({ forceRefresh: true }).catch(() => {});
+        }
+      })
       .catch(() => {});
     load();
     // Look again when the learner comes back to this tab, e.g. from the link in their email.
